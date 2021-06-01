@@ -231,7 +231,7 @@ if [[ -z "${CSR_FILE}" ]]; then
     # cnf
     if [ -f "${SH_PATH}/from_user_csr/${NAME}.csr"  -a  -f "${SH_PATH}/my_conf/openssl.cnf---${NAME}" ]; then
         # crt
-        F_GEN_CRT  "${SH_PATH}/from_user_csr/${NAME}.csr"  "${SH_PATH}/my_conf/openssl.cnf---${NAME}"
+        F_GEN_CRT  "${SH_PATH}/from_user_csr/${NAME}.csr"
     else
         echo -e "\n峰哥说：证书请求文件【${SH_PATH}/from_user_csr/${NAME}.csr】未找到，或者证书cnf文件【${SH_PATH}/my_conf/openssl.cnf---${NAME}】未找到！\n"
         exit 1
@@ -260,7 +260,7 @@ else
         F_CSR_TO_CNF  "${CSR_FILE}"
     fi
     # 生成crt
-    F_GEN_CRT  "${CSR_FILE}"  "${SH_PATH}/my_conf/openssl.cnf---${NAME}"
+    F_GEN_CRT  "${CSR_FILE}"
 fi
 
 
