@@ -26,9 +26,10 @@
 ### 1.3 喜欢她，就满足她：
 
 1. 【Star】她，让她看到你是爱她的；
-1. 【Issue】她，告诉她有哪些小脾气，她会改的，手动小绵羊；
-1. 【Fork】她，为她增加新功能，修Bug，让她更加卡哇伊；
-1. 【打赏】她，为她买jk；
+2. 【Watching】她，时刻感知她的动态；
+3. 【Fork】她，为她增加新功能，修Bug，让她更加卡哇伊；
+4. 【Issue】她，告诉她有哪些小脾气，她会改的，手动小绵羊；
+5. 【打赏】她，为她买jk；
 <img src="https://img-blog.csdnimg.cn/20210429155627295.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3poZl9zeQ==,size_16,color_FFFFFF,t_70#pic_center" alt="打赏" style="zoom:20%;" />
 
 
@@ -307,7 +308,7 @@ $ ./m-3-generate_user_crt.sh -h
         ./m-3-generate_user_crt.sh  -f /path/to/xxx.csr  -n xxxxx
         ./m-3-generate_user_crt.sh  -c 4096  -d 730  -f /path/to/xxx.csr  -n xxxxx
 ```
-
+> 如果曾经颁发的证书过期了，只需再次运行`m-3-generate_user_crt.sh`就可以了。
 
 
 ## 5 参与贡献
