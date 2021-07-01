@@ -162,7 +162,7 @@ EOF
 
 TEMP=`getopt -o hc:d:n:f:q  -l help,cert-bits:,days:,name:,csr-file:,quiet -- "$@"`
 if [ $? != 0 ]; then
-    echo "参数不合法！【请查看帮助：\$0 --help】"
+    echo "参数不合法！【请查看帮助：$0 --help】"
     exit 1
 fi
 #

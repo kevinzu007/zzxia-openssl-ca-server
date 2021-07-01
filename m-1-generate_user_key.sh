@@ -68,7 +68,7 @@ F_GEN_KEY()
 
 TEMP=`getopt -o hp:n:q  -l help,privatekey-bits:,name:,quiet -- "$@"`
 if [ $? != 0 ]; then
-    echo "参数不合法！【请查看帮助：\$0 --help】"
+    echo "参数不合法！【请查看帮助：$0 --help】"
     exit 1
 fi
 #

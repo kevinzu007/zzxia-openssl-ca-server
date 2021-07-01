@@ -49,7 +49,7 @@ case $1 in
         exit
         ;;
     *)
-        echo -e "参数错误，请查看帮助【./$0 -h】"
+        echo -e "参数错误，请查看帮助【$0 -h】"
         exit 1
         ;;
 esac
