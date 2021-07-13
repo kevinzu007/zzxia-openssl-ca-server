@@ -101,7 +101,7 @@ EOF
 
 TEMP=`getopt -o hn:q  -l help,name:,quiet -- "$@"`
 if [ $? != 0 ]; then
-    echo "参数不合法！【请查看帮助：$0 --help】"
+    echo -e "\n峰哥说：参数不合法，请查看帮助【$0 --help】\n"
     exit 1
 fi
 #
@@ -130,7 +130,7 @@ do
             break
             ;;
         *)
-            echo "参数不合法！【请查看帮助：\$0 --help】"
+            echo -e "\n峰哥说：未知参数，请查看帮助【$0 --help】\n"
             exit 1
             ;;
     esac
