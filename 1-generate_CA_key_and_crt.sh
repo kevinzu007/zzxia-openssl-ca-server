@@ -84,14 +84,14 @@ openssl req -new  -key private/ca.key.pem  -out ca.csr.pem
 
 
 # 证书
-if [ -f ca.csr.pem ]; then
+if [ -f ca.crt.pem ]; then
     echo "CA证书已存在，跳过！"
-    echo "    【${SH_PATH}/ca.csr.pem】"
+    echo "    【${SH_PATH}/ca.crt.pem】"
 else
     openssl x509 -days ${CERT_DAYS} -req  -in ca.csr.pem  -signkey private/ca.key.pem  -out ca.crt.pem
     echo "OK，CA私钥与证书已经生成："
     echo "    私钥：【${SH_PATH}/private/ca.key.pem】"
-    echo "    证书：【${SH_PATH}/ca.csr.pem】"
+    echo "    证书：【${SH_PATH}/ca.crt.pem】"
 fi
 
 
