@@ -14,6 +14,7 @@ F_HELP()
     注意：清空CA相关数据及颁发的证书及配置文件
     用法：
         $0  <-h|--help>
+        $0  <-y|--yes>
     参数说明：
         \$0   : 代表脚本本身
         []   : 代表是必选项
@@ -23,9 +24,10 @@ F_HELP()
         %    : 代表通配符，非精确值，可以被包含
         #
         -h|--help      此帮助
+        -y|--yes       初始化CA
     示例:
         # 初始化
-        $0
+        $0 -y
     "
 }
 
@@ -36,18 +38,21 @@ case $1 in
         shift
         exit
         ;;
+    -y|--yes)
+        shift
+        # OK
+        read -p "你正在进行初始化CA证书颁发程序，这将会删除所有CA秘钥及用户证书信息！ 是否键继续(y|n)：" ACK
+        if [ "x${ACK}" != 'xy' ]; then
+            echo -e "\nOK，已退出！\n"
+            exit 1
+        fi
+        ;;
     *)
         echo -e "参数错误，请查看帮助【$0 -h】"
         exit 1
         ;;
 esac
 
-
-read -p "你正在进行初始化CA证书颁发程序，这将会删除所有CA秘钥及用户证书信息！ 是否键继续(y|n)：" ACK
-if [ "x${ACK}" != 'xy' ]; then
-    echo -e "\nOK，已退出！\n"
-    exit 1
-fi
 
 
 rm -f  ca*pem
