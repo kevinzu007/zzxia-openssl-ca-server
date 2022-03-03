@@ -42,7 +42,7 @@ F_HELP()
         -h|--help      此帮助
         -n|--name      指定名称，用以确定用户证书相关名称前缀及env、cnf文件名称后缀。
                        即：【私钥、证书请求、证书】的文件名称前缀：test.com.key、test.com.csr、test.com.crt
-                           【环境变量、配置】文件名的后缀：openssl.cnf.env---test.com、openssl.cnf---test.com
+                           【环境变量、配置】文件名的后缀：env.sh---test.com、openssl.cnf---test.com
         -p|--privatekey-bits  私钥长度，默认2048
         -q|--quiet     静默方式运行
     示例:

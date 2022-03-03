@@ -69,8 +69,8 @@ $ tree
 ├── m-3-generate_user_crt.sh
 ├── m-3in1-generate_user_key-csr-crt.sh
 ├── my_conf
-│   ├── openssl.cnf.env---model
-│   └── openssl.cnf.env---test.lan
+│   ├── env.sh---model
+│   └── env.sh---test.lan
 ├── newcerts
 ├── private
 ├── README.md
@@ -105,7 +105,7 @@ $ tree
 ### 4.2 后续使用（即为用户生成私钥、证书请求、证书）
 
 在运行证书请求与颁发证书前，请先查看命令帮助，帮助中有相关命令的依赖文件、参数说明及示例！
-多数命令须先创建基于`./my_conf/openssl.cnf.env---model`创建`./my_conf/openssl.cnf.env---证书相关名称`文件，仓库中提供了一个示例（test.lan）`./my_conf/openssl.cnf.env---test.lan`供参考。
+多数命令须先创建基于`./my_conf/env.sh---model`创建`./my_conf/env.sh---证书相关名称`文件，仓库中提供了一个示例（test.lan）`./my_conf/env.sh---test.lan`供参考。
 
 
 
@@ -117,7 +117,7 @@ graph LR;
 0(CA私钥)
 1(证书相关名称)
 1-->4(证书相关名称.key)
-1-->2(openssl.cnf.env--证书相关名称)
+1-->2(env.sh--证书相关名称)
 2-->3(openssl.cnf--证书相关名称)
 3-->5(证书相关名称.csr)
 4-->5
@@ -132,7 +132,7 @@ $ ./m-3in1-generate_user_key-csr-crt.sh -h
     用途：用于生成用户秘钥与证书
     依赖：
         ./env_and_function.sh
-        ./my_conf/openssl.cnf.env---${NAME}      #--- 此文件须自行基于【./my_conf/openssl.cnf.env---model】创建
+        ./my_conf/env.sh---${NAME}      #--- 此文件须自行基于【./my_conf/env.sh---model】创建
     注意：
     用法:
         ./m-3in1-generate_user_key-csr-crt.sh  [-h|--help]
@@ -148,7 +148,7 @@ $ ./m-3in1-generate_user_key-csr-crt.sh -h
         -h|--help      此帮助
         -n|--name      指定名称，用以确定用户证书相关名称前缀及env、cnf文件名称后缀。
                        即：【私钥、证书请求、证书】的文件名称前缀：test.com.key、test.com.csr、test.com.crt
-                           【环境变量、配置】文件名的后缀：openssl.cnf.env---test.com、openssl.cnf---test.com
+                           【环境变量、配置】文件名的后缀：env.sh---test.com、openssl.cnf---test.com
         -p|--privatekey-bits  私钥长度，默认2048
         -c|--cert-bits 证书长度，默认2048
         -d|--days      证书有效期，默认365天
@@ -195,7 +195,7 @@ $ ./m-1-generate_user_key.sh -h
         -h|--help      此帮助
         -n|--name      指定名称，用以确定用户证书相关名称前缀及env、cnf文件名称后缀。
                        即：【私钥、证书请求、证书】的文件名称前缀：test.com.key、test.com.csr、test.com.crt
-                           【环境变量、配置】文件名的后缀：openssl.cnf.env---test.com、openssl.cnf---test.com
+                           【环境变量、配置】文件名的后缀：env.sh---test.com、openssl.cnf---test.com
         -p|--privatekey-bits  私钥长度，默认2048
         -q|--quiet     静默方式运行
     示例:
@@ -209,7 +209,7 @@ $ ./m-1-generate_user_key.sh -h
 ```mermaid
 graph LR;
 1(证书相关名称)
-1-->2(openssl.cnf.env--证书相关名称)
+1-->2(env.sh--证书相关名称)
 2-->3(openssl.cnf--证书相关名称)
 3-->5(证书相关名称.csr)
 1-->4(证书相关名称.key)
@@ -222,7 +222,7 @@ $ ./m-2-generate_user_csr.sh -h
     用途：用于生成用户秘钥与证书
     依赖：
         ./env_and_function.sh
-        ./my_conf/openssl.cnf.env---${NAME}      #--- 此文件须自行基于【./my_conf/openssl.cnf.env---model】创建
+        ./my_conf/env.sh---${NAME}      #--- 此文件须自行基于【./my_conf/env.sh---model】创建
     注意：
     用法:
         ./m-2-generate_user_csr.sh  [-h|--help]
@@ -238,7 +238,7 @@ $ ./m-2-generate_user_csr.sh -h
         -h|--help      此帮助
         -n|--name      指定名称，用以确定用户证书相关名称前缀及env、cnf文件名称后缀。
                        即：【私钥、证书请求、证书】的文件名称前缀：test.com.key、test.com.csr、test.com.crt
-                           【环境变量、配置】文件名的后缀：openssl.cnf.env---test.com、openssl.cnf---test.com
+                           【环境变量、配置】文件名的后缀：env.sh---test.com、openssl.cnf---test.com
         -q|--quiet     静默方式运行
     示例:
         ./m-2-generate_user_csr.sh  -n test.com
@@ -277,7 +277,7 @@ $ ./m-3-generate_user_crt.sh -h
     用途：用于颁发用户证书
     依赖：
         ./env_and_function.sh
-        ./my_conf/openssl.cnf.env---${NAME}      #--- 此文件须自行基于【./my_conf/openssl.cnf.env---model】创建
+        ./my_conf/env.sh---${NAME}      #--- 此文件须自行基于【./my_conf/env.sh---model】创建
     注意：
     用法:
         ./m-3-generate_user_crt.sh  [-h|--help]
@@ -293,7 +293,7 @@ $ ./m-3-generate_user_crt.sh -h
         -h|--help      此帮助
         -n|--name      指定名称，用以确定用户证书相关名称前缀及env、cnf文件名称后缀。
                        即：【私钥、证书请求、证书】的文件名称前缀：test.com.key、test.com.csr、test.com.crt
-                           【环境变量、配置】文件名的后缀：openssl.cnf.env---test.com、openssl.cnf---test.com
+                           【环境变量、配置】文件名的后缀：env.sh---test.com、openssl.cnf---test.com
         -f|--csr-file  指定外部用户证书请求文件。一般只有在用户使用其他工具生成证书请求时使用此项
         -c|--cert-bits 证书长度，默认2048
         -d|--days      证书有效期，默认365天

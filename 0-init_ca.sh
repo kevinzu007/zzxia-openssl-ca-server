@@ -73,7 +73,7 @@ rm -rf  private/*
 rm -rf  to_user_crt/*
 
 
-find  my_conf/*  ! -iname  openssl.cnf.env* -exec rm -f {} \;
+find  my_conf/*  ! -iname  env.sh* -exec rm -f {} \;
 echo "OK，初始化已完成！"
 
 

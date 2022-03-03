@@ -29,7 +29,7 @@ F_HELP()
     用途：用于生成用户秘钥与证书
     依赖：
         ./env_and_function.sh
-        ./my_conf/openssl.cnf.env---\${NAME}      #--- 此文件须自行基于【./my_conf/openssl.cnf.env---model】创建
+        ./my_conf/env.sh---\${NAME}      #--- 此文件须自行基于【./my_conf/env.sh---model】创建
     注意：
     用法:
         $0  [-h|--help]
@@ -45,7 +45,7 @@ F_HELP()
         -h|--help      此帮助
         -n|--name      指定名称，用以确定用户证书相关名称前缀及env、cnf文件名称后缀。
                        即：【私钥、证书请求、证书】的文件名称前缀：test.com.key、test.com.csr、test.com.crt
-                           【环境变量、配置】文件名的后缀：openssl.cnf.env---test.com、openssl.cnf---test.com
+                           【环境变量、配置】文件名的后缀：env.sh---test.com、openssl.cnf---test.com
         -p|--privatekey-bits  私钥长度，默认2048
         -c|--cert-bits 证书长度，默认2048
         -d|--days      证书有效期，默认365天
@@ -231,12 +231,12 @@ fi
 
 
 # gen
-if [ -f "${SH_PATH}/my_conf/openssl.cnf.env---${NAME}" ]; then
-    . ${SH_PATH}/my_conf/openssl.cnf.env---${NAME}
+if [ -f "${SH_PATH}/my_conf/env.sh---${NAME}" ]; then
+    . ${SH_PATH}/my_conf/env.sh---${NAME}
     F_ECHO_OPENSSL_CNF > ${SH_PATH}/my_conf/openssl.cnf---${NAME}
     F_GEN_KEY_AND_CRT
 else
-    echo -e "\n峰哥说：环境参数文件【${SH_PATH}/my_conf/openssl.cnf.env---${NAME}】未找到，请基于【${SH_PATH}/my_conf/openssl.cnf.env---model】创建！\n"
+    echo -e "\n峰哥说：环境参数文件【${SH_PATH}/my_conf/env.sh---${NAME}】未找到，请基于【${SH_PATH}/my_conf/env.sh---model】创建！\n"
     exit 1
 fi
 

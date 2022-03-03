@@ -28,7 +28,7 @@ F_HELP()
     用途：用于颁发用户证书
     依赖：
         ./env_and_function.sh
-        ./my_conf/openssl.cnf.env---\${NAME}      #--- 此文件须自行基于【./my_conf/openssl.cnf.env---model】创建
+        ./my_conf/env.sh---\${NAME}      #--- 此文件须自行基于【./my_conf/env.sh---model】创建
     注意：
     用法:
         $0  [-h|--help]
@@ -44,7 +44,7 @@ F_HELP()
         -h|--help      此帮助
         -n|--name      指定名称，用以确定用户证书相关名称前缀及env、cnf文件名称后缀。
                        即：【私钥、证书请求、证书】的文件名称前缀：test.com.key、test.com.csr、test.com.crt
-                           【环境变量、配置】文件名的后缀：openssl.cnf.env---test.com、openssl.cnf---test.com
+                           【环境变量、配置】文件名的后缀：env.sh---test.com、openssl.cnf---test.com
         -f|--csr-file  指定外部用户证书请求文件。一般只有在用户使用其他工具生成证书请求时使用此项
         -c|--cert-bits 证书长度，默认2048
         -d|--days      证书有效期，默认365天
