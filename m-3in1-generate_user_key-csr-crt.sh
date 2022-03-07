@@ -13,15 +13,6 @@ SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd ${SH_PATH}
 
 
-# env
-.  ./env_and_function.sh
-PRIVATEKEY_BITS=${PRIVATEKEY_BITS:-2048}    #--- 私钥长度
-CERT_BITS=${CERT_BITS:-2048}          #--- 证书长度
-CERT_DAYS=${CERT_DAYS:-365}           #--- 证书有效期
-#
-QUIET='no'
-
-
 
 F_HELP()
 {
@@ -194,6 +185,14 @@ do
                 exit 1
             fi
             ;;
+        -d|--days)
+            CERT_DAYS=$2
+            shift 2
+            if [[ ! ${CERT_DAYS} =~ ^[1-9]+[0-9]*$ ]]; then
+                echo -e "\n峰哥说：证书有效天数必须为整数！\n"
+                exit 1
+            fi
+            ;;
         -n|--name)
             NAME=$2
             shift 2
@@ -221,6 +220,22 @@ if [ "x${NAME}" = 'x' ]; then
 fi
 
 
+# env
+if [ -f "${SH_PATH}/my_conf/env.sh---${NAME}" ]; then
+    . ${SH_PATH}/my_conf/env.sh---${NAME}
+    . ./function.sh
+else
+    echo -e "\n峰哥说：环境参数文件【${SH_PATH}/my_conf/env.sh---${NAME}】未找到，请基于【${SH_PATH}/my_conf/env.sh---model】创建！\n"
+    exit 1
+fi
+#
+QUIET=${QUIET:-'no'}
+
+
+# cnf
+F_ECHO_OPENSSL_CNF > ${SH_PATH}/my_conf/openssl.cnf---${NAME}
+
+
 ## 交互
 #echo    "在生成用户证书请求的过程中，会以交互的方式进行，请根据提示操作！"
 #read -p "是否键继续(y|n)：" ACK
@@ -231,13 +246,6 @@ fi
 
 
 # gen
-if [ -f "${SH_PATH}/my_conf/env.sh---${NAME}" ]; then
-    . ${SH_PATH}/my_conf/env.sh---${NAME}
-    F_ECHO_OPENSSL_CNF > ${SH_PATH}/my_conf/openssl.cnf---${NAME}
-    F_GEN_KEY_AND_CRT
-else
-    echo -e "\n峰哥说：环境参数文件【${SH_PATH}/my_conf/env.sh---${NAME}】未找到，请基于【${SH_PATH}/my_conf/env.sh---model】创建！\n"
-    exit 1
-fi
+F_GEN_KEY_AND_CRT
 
 

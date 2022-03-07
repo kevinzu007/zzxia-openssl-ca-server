@@ -6,13 +6,8 @@
 #############################################################################
 
 
-
-# env
-PRIVATEKEY_BITS=2048    #--- 私钥长度
-#
-CERT_BITS=2048          #--- 证书长度
-CERT_DAYS=365           #--- 证书有效期
-
+# openssl.cnf模板
+# 使用前需要一些变量
 
 
 F_ECHO_OPENSSL_CNF()
@@ -40,6 +35,7 @@ oid_section		= new_oids
 
 
 
+####################################################################
 [ new_oids ]
 # We can add new OIDs in here for use by 'ca', 'req' and 'ts'.
 # Add a simple OID like this:
@@ -114,6 +110,7 @@ policy		= policy_match
 
 
 
+####################################################################
 # For the CA policy
 [ policy_match ]
 #如果值为"match"，则客户端证书请求时，相应信息必须和CA证书保持一致；反之如果为"optional"，则不用
@@ -130,6 +127,7 @@ emailAddress		= optional
 
 
 
+####################################################################
 # For the 'anything' policy
 # At this point in time, you must list all acceptable 'object'
 # types.
@@ -145,7 +143,6 @@ emailAddress		= optional
 
 
 ####################################################################
-
 [ req ]
 default_bits		= ${CERT_BITS}
 default_md		= sha256
@@ -174,6 +171,7 @@ string_mask = utf8only
 req_extensions = v3_req       # The extensions to add to a certificate request
 
 
+####################################################################
 # 用户信息
 [ req_distinguished_name ]
 countryName			= Country Name (2 letter code)
@@ -207,6 +205,9 @@ emailAddress_default	= $emailAddress_default
 
 # SET-ex3			= SET extension number 3
 
+
+
+####################################################################
 [ req_attributes ]
 challengePassword		= A challenge password
 challengePassword_min		= 4
@@ -216,6 +217,7 @@ unstructuredName		= An optional company name
 
 
 
+####################################################################
 # CA在签名时添加扩展
 [ usr_cert ]
 # These extensions are added when 'ca' signs a request.
@@ -272,6 +274,7 @@ authorityKeyIdentifier=keyid,issuer
 
 
 
+####################################################################
 # 证书请求扩展
 [ v3_req ]
 # Extensions to add to a certificate request
@@ -283,6 +286,7 @@ keyUsage = nonRepudiation, digitalSignature, keyEncipherment
 subjectAltName = @alt_names
 
 
+####################################################################
 # zhf_sy
 # 新增 alt_names,注意括号前后的空格，DNS.x 的数量可以自己加，common name的值也必须添加到这里
 [ alt_names ]
@@ -290,6 +294,7 @@ subjectAltName = @alt_names
 
 
 
+####################################################################
 # CA扩展
 [ v3_ca ]
 # Extensions for a typical CA
@@ -327,6 +332,7 @@ basicConstraints = CA:true
 
 
 
+####################################################################
 # 证书吊销扩展
 [ crl_ext ]
 # CRL extensions.
@@ -337,6 +343,7 @@ authorityKeyIdentifier=keyid:always
 
 
 
+####################################################################
 # 代理证书扩展
 [ proxy_cert_ext ]
 # These extensions should be added when creating a proxy certificate
@@ -399,6 +406,7 @@ proxyCertInfo=critical,language:id-ppl-anyLanguage,pathlen:3,policy:foo
 default_tsa = tsa_config1	# the default TSA section
 
 
+####################################################################
 [ tsa_config1 ]
 
 # These are used by the TSA reply generation only.

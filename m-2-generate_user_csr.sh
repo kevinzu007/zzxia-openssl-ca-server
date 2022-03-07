@@ -13,14 +13,6 @@ SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd ${SH_PATH}
 
 
-# env
-.  ./env_and_function.sh
-CERT_BITS=${CERT_BITS:-2048}          #--- 证书长度
-CERT_DAYS=${CERT_DAYS:-365}           #--- 证书有效期
-#
-QUIET='no'
-
-
 
 F_HELP()
 {
@@ -146,6 +138,23 @@ fi
 
 
 
+# env
+if [ -f "${SH_PATH}/my_conf/env.sh---${NAME}" ]; then
+    . ${SH_PATH}/my_conf/env.sh---${NAME}
+    . ./function.sh
+else
+    echo -e "\n峰哥说：环境参数文件【${SH_PATH}/my_conf/env.sh---${NAME}】未找到，请基于【${SH_PATH}/my_conf/env.sh---model】创建！\n"
+    exit 1
+fi
+#
+QUIET=${QUIET:-'no'}
+
+
+# cnf
+F_ECHO_OPENSSL_CNF > ${SH_PATH}/my_conf/openssl.cnf---${NAME}
+
+
+
 #echo    "在生成用户证书请求的过程中，会以交互的方式进行，请根据提示操作！"
 #read -p "是否键继续(y|n)：" ACK
 #if [ "x${ACK}" != 'xy' ]; then
@@ -159,15 +168,9 @@ if [ ! -f "${SH_PATH}/from_user_csr/${NAME}.key" ]; then
      exit 1
 fi
 
-# env
-if [ -f "${SH_PATH}/my_conf/env.sh---${NAME}" ]; then
-    . ${SH_PATH}/my_conf/env.sh---${NAME}
-    F_ECHO_OPENSSL_CNF > ${SH_PATH}/my_conf/openssl.cnf---${NAME}
-    F_GEN_CSR
-else
-    echo -e "\n峰哥说：环境参数文件【${SH_PATH}/my_conf/env.sh---${NAME}】未找到，请基于【${SH_PATH}/my_conf/env.sh---model】创建！\n"
-    exit 1
-fi
+
+# csr
+F_GEN_CSR
 
 
 

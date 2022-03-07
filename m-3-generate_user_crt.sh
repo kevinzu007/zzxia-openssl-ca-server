@@ -13,14 +13,6 @@ SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd ${SH_PATH}
 
 
-# env
-.  ./env_and_function.sh
-CERT_BITS=${CERT_BITS:-2048}          #--- 证书长度
-CERT_DAYS=${CERT_DAYS:-365}           #--- 证书有效期
-#
-QUIET='no'
-
-
 
 F_HELP()
 {
@@ -229,42 +221,42 @@ if [[ -z "${NAME}" ]]; then
 fi
 
 
+# env
+if [ -f "${SH_PATH}/my_conf/env.sh---${NAME}" ]; then
+    . ${SH_PATH}/my_conf/env.sh---${NAME}     #--- 仅使用 $CERT_BITS、$CERT_DAYS 变量，其他变量会被csr中的值覆盖
+    . ./function.sh
+else
+    echo -e "\n峰哥说：环境参数文件【${SH_PATH}/my_conf/env.sh---${NAME}】未找到，请基于【${SH_PATH}/my_conf/env.sh---model】创建！\n"
+    exit 1
+fi
+#
+QUIET=${QUIET:-'no'}
+
+
 
 #
 if [[ -z "${CSR_FILE}" ]]; then
-    # 用本程序为用户生成csr的方式时
+    ## 默认：使用本程序为用户生成的csr（未提供--csr-file参数时）
     # 所有所有证书信息直接从本地cnf文件中获取，用cnf文件生成证书
-    # cnf
-    if [ -f "${SH_PATH}/from_user_csr/${NAME}.csr"  -a  -f "${SH_PATH}/my_conf/openssl.cnf---${NAME}" ]; then
-        # crt
-        F_GEN_CRT  "${SH_PATH}/from_user_csr/${NAME}.csr"
-    else
-        echo -e "\n峰哥说：证书请求文件【${SH_PATH}/from_user_csr/${NAME}.csr】未找到，或者证书cnf文件【${SH_PATH}/my_conf/openssl.cnf---${NAME}】未找到！\n"
+    # csr
+    if [ ! -f "${SH_PATH}/from_user_csr/${NAME}.csr" ]; then
+        echo -e "\n峰哥说：证书请求文件【${SH_PATH}/from_user_csr/${NAME}.csr】未找到！\n"
         exit 1
     fi
+    # cnf
+    F_ECHO_OPENSSL_CNF > ${SH_PATH}/my_conf/openssl.cnf---${NAME}
+    # crt
+    F_GEN_CRT  "${SH_PATH}/from_user_csr/${NAME}.csr"
 else
-    # 用户用其他工具生成csr时
+    ## 使用用其他工具生成的csr
     # 所有证书信息直接从用户csr中获取，并生成cnf文件，用cnf文件生成证书
     # csr
     if [ ! -f ${CSR_FILE} ]; then
         echo -e "\n峰哥说：证书请求文件【${CSR_FILE}】未找到！\n"
         exit 1
     fi
-    # 检测重名
-    if [ -f "${SH_PATH}/my_conf/openssl.cnf---${NAME}"  -a  ${QUIET} != 'yes' ]; then
-        echo "cnf文件【${SH_PATH}/my_conf/openssl.cnf---${NAME}】已存在，请确定是否可以覆盖现有文件，如果不能确定，可以通过修改【-d|--name {证书相关名称}】参数值以规避cnf文件已存在问题"
-        read -p "覆盖现有cnf文件吗？(y|n):" ACK
-        if [ "x${ACK}" = 'xy' ]; then
-            # 生成cnf
-            F_CSR_TO_CNF  "${CSR_FILE}"
-        else
-            echo -e "\nOK，已退出！\n请为【-d|--name {证书相关名称}】参数换个参数值\n"
-            exit 1
-        fi
-    else
-        # 生成cnf
-        F_CSR_TO_CNF  "${CSR_FILE}"
-    fi
+    # 生成cnf
+    F_CSR_TO_CNF  "${CSR_FILE}"
     # 生成crt
     F_GEN_CRT  "${CSR_FILE}"
 fi

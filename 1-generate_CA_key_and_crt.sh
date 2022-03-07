@@ -13,10 +13,6 @@ SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd ${SH_PATH}
 
 
-# env
-PRIVATEKEY_BITS=4096
-CERT_DAYS=3650
-
 
 F_HELP()
 {
@@ -61,6 +57,26 @@ case $1 in
 esac
 
 
+# env
+NAME='ca'
+#
+if [ -f "${SH_PATH}/my_conf/env.sh---${NAME}" ]; then
+    . ${SH_PATH}/my_conf/env.sh---${NAME}
+    . ./function.sh
+else
+    echo -e "\n峰哥说：环境参数文件【${SH_PATH}/my_conf/env.sh---${NAME}】未找到，请基于【${SH_PATH}/my_conf/env.sh---model】创建！\n"
+    exit 1
+fi
+
+
+# cnf
+F_ECHO_OPENSSL_CNF > ${SH_PATH}/my_conf/openssl.cnf---${NAME}
+# CA:TRUE
+sed -i 's/CA:FALSE/CA:TRUE/'  ${SH_PATH}/my_conf/openssl.cnf---${NAME}
+# keyUsage = cRLSign, keyCertSign
+sed -i "/^# keyUsag.*$/a\keyUsage = cRLSign, keyCertSign"  ${SH_PATH}/my_conf/openssl.cnf---${NAME}
+sed -i "s/keyUsage = nonRepudiation, digitalSignature, keyEncipherment/keyUsage = cRLSign, keyCertSign/"  ${SH_PATH}/my_conf/openssl.cnf---${NAME}
+
 #
 echo    "在自签名证书的生成过程中，会以交互的方式进行，请根据提示填写你的CA相关信息"
 read -p "是否键继续(y|n)：" ACK
@@ -80,7 +96,10 @@ fi
 
 
 # csr
-openssl req -new  -key private/ca.key.pem  -out ca.csr.pem
+openssl req -new  \
+    -key private/ca.key.pem  \
+    -out ca.csr.pem  \
+    -config  ${SH_PATH}/my_conf/openssl.cnf---${NAME}
 
 
 # 证书
@@ -88,10 +107,17 @@ if [ -f ca.crt.pem ]; then
     echo "CA证书已存在，跳过！"
     echo "    【${SH_PATH}/ca.crt.pem】"
 else
-    openssl x509 -days ${CERT_DAYS} -req  -in ca.csr.pem  -signkey private/ca.key.pem  -out ca.crt.pem
+    openssl x509 -days ${CERT_DAYS}  \
+        -req  -in ca.csr.pem  \
+        -signkey private/ca.key.pem  \
+        -out ca.crt.pem  \
+        -extensions v3_req  \
+        -extfile ${SH_PATH}/my_conf/openssl.cnf---${NAME}
     echo "OK，CA私钥与证书已经生成："
     echo "    私钥：【${SH_PATH}/private/ca.key.pem】"
     echo "    证书：【${SH_PATH}/ca.crt.pem】"
+    openssl x509  -outform der  -in ca.crt.pem  -out ca.cer
+    echo "    二进制证书：【${SH_PATH}/ca.cer】"
 fi
 
 
