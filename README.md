@@ -57,11 +57,9 @@ $ tree
 .
 ├── 0-init_ca.sh
 ├── 1-generate_CA_key_and_crt.sh
-├── certs
-├── crl
+├── blog-自建CA及证书颁发-old.md
 ├── crlnumber
-├── env_and_function.sh
-├── from_user_csr
+├── function.sh
 ├── index.txt
 ├── LICENSE
 ├── m-1-generate_user_key.sh
@@ -69,15 +67,13 @@ $ tree
 ├── m-3-generate_user_crt.sh
 ├── m-3in1-generate_user_key-csr-crt.sh
 ├── my_conf
+│   ├── env.sh---ca.sample
 │   ├── env.sh---model
 │   └── env.sh---test.lan
-├── newcerts
-├── private
 ├── README.md
-├── serial
-└── to_user_crt
+└── serial
 
-7 directories, 14 files
+1 directory, 16 files
 ```
 
 
@@ -91,21 +87,22 @@ $ tree
 
 
 ## 4 使用说明
-所有命令都提供了`$0 -h|--help`参数，查看帮助即可。
+所有脚本都提供了`$0 -h|--help`参数，查看帮助即可。
 
 
 
 ### 4.1 搭建CA
-1. 运行`./0-init_ca.sh`进行初始化
-2. 运行`1-generate_CA_key_and_crt.sh`以生成CA服务器私钥与自签名证书
+1. 运行`./0-init_ca.sh -y`进行初始化
+2. 基于`./my_conf/env.sh---ca.sample`创建`./my_conf/env.sh---ca`CA的环境变量文件
+3. 运行`1-generate_CA_key_and_crt.sh -y`以生成CA服务器私钥与自签名证书
 > 以上根据自己的信息填写即可
 
 
 
-### 4.2 后续使用（即为用户生成私钥、证书请求、证书）
+### 4.2 日常使用（为用户生成私钥、证书请求、证书）
 
-在运行证书请求与颁发证书前，请先查看命令帮助，帮助中有相关命令的依赖文件、参数说明及示例！
-多数命令须先创建基于`./my_conf/env.sh---model`创建`./my_conf/env.sh---证书相关名称`文件，仓库中提供了一个示例（test.lan）`./my_conf/env.sh---test.lan`供参考。
+> 运行脚本前，请先查看帮助，帮助中有相关脚本的依赖文件、参数说明及示例！
+> 多数脚本须依赖基于`./my_conf/env.sh---model`创建的`./my_conf/env.sh---证书相关名称`环境变量文件，仓库中提供了一个示例（test.lan）`./my_conf/env.sh---test.lan`供参考。
 
 
 
@@ -131,7 +128,7 @@ $ ./m-3in1-generate_user_key-csr-crt.sh -h
 
     用途：用于生成用户秘钥与证书
     依赖：
-        ./env_and_function.sh
+        ./function.sh
         ./my_conf/env.sh---${NAME}      #--- 此文件须自行基于【./my_conf/env.sh---model】创建
     注意：
     用法:
@@ -164,7 +161,7 @@ $ ./m-3in1-generate_user_key-csr-crt.sh -h
 
 
 
-#### 4.2.2 分别为用户生成私钥、证书请求、证书
+#### 4.2.2 分步骤为用户生成私钥、证书请求、证书
 
 1. 生成私钥：
 >程序流程图：
@@ -179,7 +176,7 @@ $ ./m-1-generate_user_key.sh -h
 
     用途：用于生成用户秘钥
     依赖：
-        ./env_and_function.sh
+        ./function.sh
     注意：
     用法:
         ./m-1-generate_user_key.sh  [-h|--help]
@@ -221,7 +218,7 @@ $ ./m-2-generate_user_csr.sh -h
 
     用途：用于生成用户秘钥与证书
     依赖：
-        ./env_and_function.sh
+        ./function.sh
         ./my_conf/env.sh---${NAME}      #--- 此文件须自行基于【./my_conf/env.sh---model】创建
     注意：
     用法:
@@ -276,7 +273,7 @@ $ ./m-3-generate_user_crt.sh -h
 
     用途：用于颁发用户证书
     依赖：
-        ./env_and_function.sh
+        ./function.sh
         ./my_conf/env.sh---${NAME}      #--- 此文件须自行基于【./my_conf/env.sh---model】创建
     注意：
     用法:
