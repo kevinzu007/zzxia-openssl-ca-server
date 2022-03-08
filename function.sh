@@ -337,11 +337,34 @@ authorityKeyIdentifier = keyid,issuer
 basicConstraints = CA:FALSE
 
 
-# 典型客户端证书的秘钥用法：
-#     - nonRepudiation    不可抵赖
-#     - digitalSignature  数字签名
-#     - keyEncipherment   秘钥加密
-keyUsage = nonRepudiation,digitalSignature,keyEncipherment
+# 秘钥用法：
+#     - digitalSignature    数字签名
+#     - nonRepudiation      认可签名
+#     - keyEncipherment     密钥加密
+#     - dataEncipherment    数据加密
+#     - keyAgreement        密钥协商
+#     - keyCertSign         证书签名
+#     - cRLSign             CRL 签名
+#     - encipherOnly        仅仅加密
+#     - decipherOnly        仅仅解密
+#keyUsage = nonRepudiation,digitalSignature,keyEncipherment
+# keyUsage = 用逗号分隔
+
+
+# 增强密钥用法：
+#    - serverAuth         SSL/TLS Web服务器身份验证
+#    - clientAuth         SSL/TLS Web客户端身份验证
+#    - codeSigning        代码签名
+#    - emailProtection    安全电子邮件 (S/MIME).
+#    - timeStamping       时间戳
+#    - msCodeInd          Microsoft 个人代码签名 (authenticode)
+#    - msCodeCom          Microsoft 商业代码签名 (authenticode)
+#    - msCTLSign          Microsoft 信任列表签名
+#    - msSGC              Microsoft Server Gated Crypto
+#    - msEFS              Microsoft 加密文件系统
+#    - nsSGC              Netscape Server Gated Crypto
+#extendedKeyUsage = serverAuth,clientAuth
+# extendedKeyUsage = 用逗号分隔
 
 
 # zhf_sy --- 添加备用名
