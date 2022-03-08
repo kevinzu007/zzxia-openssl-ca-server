@@ -73,9 +73,8 @@ fi
 F_ECHO_OPENSSL_CNF > ${SH_PATH}/my_conf/openssl.cnf---${NAME}
 # CA:TRUE
 sed -i 's/CA:FALSE/CA:TRUE/'  ${SH_PATH}/my_conf/openssl.cnf---${NAME}
-# keyUsage = cRLSign, keyCertSign
-sed -i "/^# keyUsag.*$/a\keyUsage = cRLSign, keyCertSign"  ${SH_PATH}/my_conf/openssl.cnf---${NAME}
-sed -i "s/keyUsage = nonRepudiation, digitalSignature, keyEncipherment/keyUsage = cRLSign, keyCertSign/"  ${SH_PATH}/my_conf/openssl.cnf---${NAME}
+# keyUsage = nonRepudiation,keyCertSign,cRLSign
+sed -i "s/^keyUsage = nonRepudiation,digitalSignature,keyEncipherment/keyUsage = nonRepudiation,keyCertSign,cRLSign/"  ${SH_PATH}/my_conf/openssl.cnf---${NAME}
 
 #
 echo    "在自签名证书的生成过程中，会以交互的方式进行，请根据提示填写你的CA相关信息"
