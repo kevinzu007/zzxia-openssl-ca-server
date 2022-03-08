@@ -115,8 +115,8 @@ else
     echo "OK，CA私钥与证书已经生成："
     echo "    私钥：【${SH_PATH}/private/ca.key.pem】"
     echo "    证书：【${SH_PATH}/ca.crt.pem】"
-    openssl x509  -outform der  -in ca.crt.pem  -out ca.cer
-    echo "    二进制证书：【${SH_PATH}/ca.cer】"
+    openssl x509  -outform der  -in ca.crt.pem  -out ca.crt.der
+    echo "    二进制证书：【${SH_PATH}/ca.crt.der】"
 fi
 
 
