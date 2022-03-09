@@ -17,7 +17,7 @@ cd ${SH_PATH}
 F_HELP()
 {
     echo "
-    用途：用于生成用户秘钥与证书
+    用途：用于生成用户证书请求
     依赖：
         ./env_and_function.sh
         ./my_conf/env.sh---\${NAME}      #--- 此文件须自行基于【./my_conf/env.sh---model】创建
