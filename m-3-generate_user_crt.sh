@@ -19,7 +19,7 @@ F_HELP()
     echo "
     用途：用于颁发用户证书
     依赖：
-        ./env_and_function.sh
+        ./function.sh
         ./my_conf/env.sh---\${NAME}      #--- 此文件须自行基于【./my_conf/env.sh---model】创建
     注意：
     用法:
@@ -236,7 +236,7 @@ QUIET=${QUIET:-'no'}
 
 #
 if [[ -z "${CSR_FILE}" ]]; then
-    ## 默认：使用本程序为用户生成的csr（未提供--csr-file参数时）
+    ## 默认：使用先前本程序为用户生成的csr（未提供--csr-file参数时）
     # 所有所有证书信息直接从本地cnf文件中获取，用cnf文件生成证书
     # csr
     if [ ! -f "${SH_PATH}/from_user_csr/${NAME}.csr" ]; then
@@ -244,7 +244,7 @@ if [[ -z "${CSR_FILE}" ]]; then
         exit 1
     fi
     # cnf
-    F_ECHO_OPENSSL_CNF > ${SH_PATH}/my_conf/openssl.cnf---${NAME}
+    # 现有的
     # crt
     F_GEN_CRT  "${SH_PATH}/from_user_csr/${NAME}.csr"
 else

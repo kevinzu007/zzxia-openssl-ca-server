@@ -19,6 +19,8 @@ F_HELP()
     echo "
     用途：生成CA服务器私钥与证书
     依赖：
+        ./function.sh
+        ./my_conf/env.sh---CA     #--- 此文件须自行基于【./my_conf/env.sh---CA.sample】创建
     注意：如果证书已存在，将会跳过
     用法：
         $0  <-h|--help>
@@ -58,7 +60,7 @@ esac
 
 
 # env
-NAME='ca'
+NAME='CA'
 #
 if [ -f "${SH_PATH}/my_conf/env.sh---${NAME}" ]; then
     . ${SH_PATH}/my_conf/env.sh---${NAME}
@@ -67,14 +69,26 @@ else
     echo -e "\n峰哥说：环境参数文件【${SH_PATH}/my_conf/env.sh---${NAME}】未找到，请基于【${SH_PATH}/my_conf/env.sh---model】创建！\n"
     exit 1
 fi
+# 生成秘钥用法变量
+F_CERT_USE_FOR_VAR
+if [ $? -ne 0 ]; then
+    echo -e "\n峰哥说：配置文件【${SH_PATH}/my_conf/env.sh---${NAME}】中的参数【CERT_USE_FOR】设置错误，请检查\n"
+    exit 1
+fi
 
 
 # cnf
 F_ECHO_OPENSSL_CNF > ${SH_PATH}/my_conf/openssl.cnf---${NAME}
+# keyUsage
+sed -i "/^# keyUsage = 用逗号分隔/a\\${MY_KEY_USAGE}"  ${SH_PATH}/my_conf/openssl.cnf---${NAME}
+# extendedKeyUsage
+if [ -n "${MY_EXTENDED_KEY_USAGE}" ]; then
+    sed -i "/^# extendedKeyUsage = 用逗号分隔/a\\${MY_EXTENDED_KEY_USAGE}"  ${SH_PATH}/my_conf/openssl.cnf---${NAME}
+fi
 # CA:TRUE
-sed -i 's/CA:FALSE/CA:TRUE/'  ${SH_PATH}/my_conf/openssl.cnf---${NAME}
-# keyUsage = nonRepudiation,keyCertSign,cRLSign
-sed -i "/^# keyUsage = 用逗号分隔/a\keyUsage = nonRepudiation,keyCertSign,cRLSign"  ${SH_PATH}/my_conf/openssl.cnf---${NAME}
+if [ "${CERT_USE_FOR}" = '1' -o "${CERT_USE_FOR}" = 'ca' ]; then
+    sed -i 's/CA:FALSE/CA:TRUE/'  ${SH_PATH}/my_conf/openssl.cnf---${NAME}
+fi
 
 
 #

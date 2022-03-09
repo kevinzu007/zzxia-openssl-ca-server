@@ -6,10 +6,8 @@
 #############################################################################
 
 
-# openssl.cnf模板
+# 生成openssl.cnf文件
 # 使用前需要一些变量
-
-
 F_ECHO_OPENSSL_CNF()
 {
     echo "
@@ -572,5 +570,62 @@ ess_cert_id_chain   = no    # Must the ESS cert id chain be included?
                 # (optional, default: no)
     "
 }
+
+
+
+# 生成证书用法变量
+F_CERT_USE_FOR_VAR()
+{
+    # Do
+    case ${CERT_USE_FOR} in
+        1|ca)
+            export MY_KEY_USAGE='keyUsage = nonRepudiation,keyCertSign,cRLSign'
+            export MY_EXTENDED_KEY_USAGE=''
+            ;;
+        2|code)
+            export MY_KEY_USAGE='keyUsage = digitalSignature'
+            export MY_EXTENDED_KEY_USAGE='extendedKeyUsage = codeSigning'
+            ;;
+        3|computer)
+            export MY_KEY_USAGE='keyUsage = digitalSignature,keyAgreement'
+            export MY_EXTENDED_KEY_USAGE='extendedKeyUsage = serverAuth'
+            ;;
+        4|webserver)
+            export MY_KEY_USAGE='keyUsage = digitalSignature,nonRepudiation,keyEncipherment,dataEncipherment,keyAgreement'
+            export MY_EXTENDED_KEY_USAGE='extendedKeyUsage = serverAuth'
+            ;;
+        5|client)
+            export MY_KEY_USAGE='keyUsage = digitalSignature,nonRepudiation,keyEncipherment,dataEncipherment'
+            export MY_EXTENDED_KEY_USAGE='extendedKeyUsage = clientAuth'
+            ;;
+        6|trustlist)
+            export MY_KEY_USAGE='keyUsage = digitalSignature'
+            export MY_EXTENDED_KEY_USAGE='extendedKeyUsage = msCTLSign'
+            ;;
+        7|timestamp)
+            export MY_KEY_USAGE='keyUsage = digitalSignature,nonRepudiation,keyEncipherment,dataEncipherment'
+            export MY_EXTENDED_KEY_USAGE='extendedKeyUsage = timeStamping'
+            ;;
+        8|ipsec)
+            export MY_KEY_USAGE='keyUsage = digitalSignature,nonRepudiation,keyEncipherment,dataEncipherment'
+            export MY_EXTENDED_KEY_USAGE='extendedKeyUsage = 1.3.6.1.5.5.8.2.2'
+            ;;
+        9|email)
+            export MY_KEY_USAGE='keyUsage = digitalSignature,nonRepudiation,keyEncipherment,dataEncipherment'
+            export MY_EXTENDED_KEY_USAGE='extendedKeyUsage = emailProtection'
+            ;;
+        10|smartcard)
+            export MY_KEY_USAGE='keyUsage = digitalSignature,keyAgreement,decipherOnly'
+            export MY_EXTENDED_KEY_USAGE='extendedKeyUsage = 1.3.6.1.4.1.311.10.3.11,msEFS,1.3.6.1.4.1.311.20.2.2'
+            ;;
+        *)
+            #echo -e "\n峰哥说：配置文件【/my_conf/env.sh---你的证书名称】中的参数【CERT_USE_FOR】设置错误，请检查\n"
+            return 1
+            ;;
+    esac
+    #
+    return 0
+}
+
 
 
