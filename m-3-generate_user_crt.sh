@@ -20,7 +20,7 @@ F_HELP()
     用途：用于颁发用户证书
     依赖：
         ./function.sh
-        ./my_conf/env.sh---\${NAME}      #--- 此文件须自行基于【./my_conf/env.sh---model】创建
+        ./my_conf/env.sh---\${NAME}      #--- 此文件须自行基于【./my_conf/env.sh---model】创建，当使用外部证书请求文件时，无须此配置文件
     注意：
     用法:
         $0  [-h|--help]
@@ -60,16 +60,25 @@ F_CSR_TO_CNF()
     F_CSR_FILE=$1
     openssl req  -in ${F_CSR_FILE}  -noout -text  >  /tmp/${SH_NAME}-${NAME}.csr.text
     #
+    # 证书
+    export CERT_BITS=${CERT_BITS:-2048}          #--- 证书长度
+    export CERT_DAYS=${CERT_DAYS:-365}           #--- 证书有效期
+    #
     # 主要信息
     CSR_SUBJECT=$( cat /tmp/${SH_NAME}-${NAME}.csr.text  \
         | grep  'Subject: C' | sed 's/^ *//'  \
         | awk -F ':' '{print $2}'  \
-        | sed 's/,//g' )
+        | sed 's/ = /=\"/g' | sed 's/,/\",/g' | sed 's/$/\"/' )
     # env
+    # 将分隔符换成‘,’，然后完了再换回去
+    OLD_IFS="$IFS"
+    IFS=","
+    #
     for LINE in $( echo ${CSR_SUBJECT} );
     do
         eval $( echo ${LINE} )
     done
+    IFS="$OLD_IFS"
     #
     countryName_default="$C"
     stateOrProvinceName_default="$ST"
@@ -83,7 +92,7 @@ F_CSR_TO_CNF()
     CSR_SUBJECT_A=$( cat /tmp/${SH_NAME}-${NAME}.csr.text  \
         | awk '/X509v3 Subject Alternative Name/{getline; print}'  \
         | sed 's/^ *//'  \
-        | sed  's/,//g' )
+        | sed 's/,//g' )
     # env
     alt_names=''
     i=1
@@ -94,15 +103,49 @@ F_CSR_TO_CNF()
         let i=$i+1
     done
     #
+    F_ECHO_OPENSSL_CNF > "${SH_PATH}/my_conf/openssl.cnf---${NAME}"
+    #
+    # sed 追加
+    # 基本约束：是否为CA证书请求
+    CSR_BASIC=$( cat /tmp/${SH_NAME}-${NAME}.csr.text  \
+        | awk '/X509v3 Basic Constraints:/{getline; print}'  \
+        | sed 's/^ *//'  \
+        | sed 's/,//g' )
+    if [ "${CSR_BASIC}" = 'CA:TRUE' ]; then
+        sed -i 's/CA:FALSE/CA:TRUE/'  ${SH_PATH}/my_conf/openssl.cnf---${NAME}
+    fi
+    #
+    # 秘钥用法
+    CSR_KEY_USAGES=$( cat /tmp/${SH_NAME}-${NAME}.csr.text  \
+        | awk '/X509v3 Key Usage:/{getline; print}'  \
+        | sed 's/^ *//' )
+    if [ $? -ne 0 ]; then
+        echo -e "\n峰哥说：秘钥用法为空，不可能的，请检查你的证书请求文件\n"
+        return 1
+    else
+        # 查询【key_usage.md】获取参数值，然后sed添加到配置文件${SH_PATH}/my_conf/openssl.cnf---${NAME}中
+        echo -n "\n峰哥说：这个功能还没做完，搞下吧 :-)\n"
+    fi
+    #
+    # 增强秘钥用法
+    CSR_EXTENDED_KEY_USAGES=$( cat /tmp/${SH_NAME}-${NAME}.csr.text  \
+        | awk '/X509v3 Key Usage:/{getline; print}'  \
+        | sed 's/^ *//' )
+    if [ $? -eq 0 ]; then
+        # 查询【key_usage.md】获取参数值，然后sed添加到配置文件${SH_PATH}/my_conf/openssl.cnf---${NAME}中
+        echo -n "\n峰哥说：这个功能还没做完，搞下吧 :-)\n"
+    fi
+    #
     echo
     echo "证书请求信息如下："
     echo '------------------------------------------------------------'
-    echo ${CSR_SUBJECT}
-    echo ${CSR_SUBJECT_A}
+    echo 主题：${CSR_SUBJECT}
+    echo 备用主题：${CSR_SUBJECT_A}
+    echo 基本约束：${CSR_BASIC}
+    echo 秘钥用法：${CSR_KEY_USAGES}
+    echo 增强秘钥用法：${CSR_EXTENDED_KEY_USAGES}
     echo '------------------------------------------------------------'
     echo
-    #
-    F_ECHO_OPENSSL_CNF > "${SH_PATH}/my_conf/openssl.cnf---${NAME}"
 }
 
 
