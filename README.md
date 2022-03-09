@@ -61,19 +61,20 @@ $ tree
 ├── crlnumber
 ├── function.sh
 ├── index.txt
+├── key_usage.md
 ├── LICENSE
 ├── m-1-generate_user_key.sh
 ├── m-2-generate_user_csr.sh
 ├── m-3-generate_user_crt.sh
 ├── m-3in1-generate_user_key-csr-crt.sh
 ├── my_conf
-│   ├── env.sh---ca.sample
+│   ├── env.sh---CA.sample
 │   ├── env.sh---model
 │   └── env.sh---test.lan
 ├── README.md
 └── serial
 
-1 directory, 16 files
+1 directory, 17 files
 ```
 
 
@@ -93,7 +94,7 @@ $ tree
 
 ### 4.1 搭建CA
 1. 运行`./0-init_ca.sh -y`进行初始化
-2. 基于`./my_conf/env.sh---ca.sample`创建`./my_conf/env.sh---ca`CA的环境变量文件
+2. 基于`./my_conf/env.sh---CA.sample`创建`./my_conf/env.sh---CA`CA的环境变量文件
 3. 运行`1-generate_CA_key_and_crt.sh -y`以生成CA服务器私钥与自签名证书
 > 以上根据自己的信息填写即可
 
@@ -114,8 +115,8 @@ graph LR;
 0(CA私钥)
 1(证书相关名称)
 1-->4(证书相关名称.key)
-1-->2(env.sh--证书相关名称)
-2-->3(openssl.cnf--证书相关名称)
+1-->2(env.sh---证书相关名称)
+2-->3(openssl.cnf---证书相关名称)
 3-->5(证书相关名称.csr)
 4-->5
 5-->6(证书相关名称.crt)
@@ -206,8 +207,8 @@ $ ./m-1-generate_user_key.sh -h
 ```mermaid
 graph LR;
 1(证书相关名称)
-1-->2(env.sh--证书相关名称)
-2-->3(openssl.cnf--证书相关名称)
+1-->2(env.sh---证书相关名称)
+2-->3(openssl.cnf---证书相关名称)
 3-->5(证书相关名称.csr)
 1-->4(证书相关名称.key)
 4-->5
@@ -216,7 +217,7 @@ graph LR;
 ```bash
 $ ./m-2-generate_user_csr.sh -h
 
-    用途：用于生成用户秘钥与证书
+    用途：用于生成用户证书请求
     依赖：
         ./function.sh
         ./my_conf/env.sh---${NAME}      #--- 此文件须自行基于【./my_conf/env.sh---model】创建
@@ -248,7 +249,7 @@ $ ./m-2-generate_user_csr.sh -h
 graph LR;
 0(CA私钥)
 1(证书相关名称)
-1-->3(openssl.cnf--证书相关名称)
+1-->3(openssl.cnf---证书相关名称)
 1-->5(证书相关名称.csr)
 5-->6(证书相关名称.crt)
 3-->6
@@ -260,7 +261,7 @@ graph LR;
 graph LR;
 0(CA私钥)
 1(证书相关名称)
-1-->3(openssl.cnf--证书相关名称)
+1-->3(openssl.cnf---证书相关名称)
 5(来自外部.csr)-->3
 5-->6(证书相关名称.crt)
 3-->6
@@ -274,7 +275,7 @@ $ ./m-3-generate_user_crt.sh -h
     用途：用于颁发用户证书
     依赖：
         ./function.sh
-        ./my_conf/env.sh---${NAME}      #--- 此文件须自行基于【./my_conf/env.sh---model】创建
+        ./my_conf/env.sh---${NAME}      #--- 此文件须自行基于【./my_conf/env.sh---model】创建，当使用外部证书请求文件时，无须此配置文件
     注意：
     用法:
         ./m-3-generate_user_crt.sh  [-h|--help]
