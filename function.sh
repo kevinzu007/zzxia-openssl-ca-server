@@ -25,7 +25,7 @@ RANDFILE        = \$ENV::HOME/.rnd
 #oid_file       = \$ENV::HOME/.oid
 oid_section     = new_oids
 
-# 当【openssl x509】实用程序和【-extfile】选项一起用时，在此处命名要使用的 X.509v3 扩展section名称
+# 当【openssl x509】实用程序和【-extfile】选项一起用时，在此处命名要使用的 X.509v3 扩展section名称。（也可以直接在命令行带上参数选项【-extensions section名称】吧）
 # To use this configuration file with the "-extfile" option of the
 # "openssl x509" utility, name here the section containing the
 # X.509v3 extensions to use:
