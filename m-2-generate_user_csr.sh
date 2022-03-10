@@ -54,8 +54,8 @@ F_GEN_CSR()
             set timeout 10
             spawn  bash -c  "openssl req -new  -key ${SH_PATH}/from_user_csr/${NAME}.key  \
                 -out ${SH_PATH}/from_user_csr/${NAME}.csr  \
-                -config  ${SH_PATH}/my_conf/openssl.cnf---${NAME}  2>&1  \
-                | tee /tmp/${SH_NAME}-${NAME}-csr.log"
+                -config  ${SH_PATH}/my_conf/openssl.cnf---${NAME}  \
+                2>&1  |  tee /tmp/${SH_NAME}-${NAME}-csr.log"
             expect {
                 "Country Name" { send "\n"; exp_continue }
                 "State or Province Name*" { send "\n"; exp_continue }
@@ -72,8 +72,8 @@ EOF
     else
         openssl req -new  -key ${SH_PATH}/from_user_csr/${NAME}.key  \
             -out ${SH_PATH}/from_user_csr/${NAME}.csr  \
-            -config  ${SH_PATH}/my_conf/openssl.cnf---${NAME}  2>&1  \
-            | tee /tmp/${SH_NAME}-${NAME}-csr.log
+            -config  ${SH_PATH}/my_conf/openssl.cnf---${NAME}  \
+            2>&1  | tee /tmp/${SH_NAME}-${NAME}-csr.log
     fi
     # 成功？
     #

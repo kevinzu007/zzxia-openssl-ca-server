@@ -67,8 +67,8 @@ F_GEN_KEY_AND_CRT()
             set timeout 10
             spawn  bash -c  "openssl req -new  -key ${SH_PATH}/from_user_csr/${NAME}.key  \
                 -out ${SH_PATH}/from_user_csr/${NAME}.csr  \
-                -config  ${SH_PATH}/my_conf/openssl.cnf---${NAME}  2>&1  \
-                | tee /tmp/${SH_NAME}-${NAME}-csr.log"
+                -config  ${SH_PATH}/my_conf/openssl.cnf---${NAME}  \
+                2>&1  |  tee /tmp/${SH_NAME}-${NAME}-csr.log"
             expect {
                 "Country Name" { send "\n"; exp_continue }
                 "State or Province Name*" { send "\n"; exp_continue }
@@ -85,8 +85,8 @@ EOF
     else
         openssl req -new  -key ${SH_PATH}/from_user_csr/${NAME}.key  \
             -out ${SH_PATH}/from_user_csr/${NAME}.csr  \
-            -config  ${SH_PATH}/my_conf/openssl.cnf---${NAME}  2>&1  \
-            | tee /tmp/${SH_NAME}-${NAME}-csr.log
+            -config  ${SH_PATH}/my_conf/openssl.cnf---${NAME}  \
+            2>&1  |  tee /tmp/${SH_NAME}-${NAME}-csr.log
     fi
     # 成功？
     #
@@ -102,9 +102,9 @@ EOF
             set timeout 10
             spawn  bash -c  "openssl ca  -in ${SH_PATH}/from_user_csr/${NAME}.csr  \
                 -out ${SH_PATH}/to_user_crt/${NAME}.crt  \
+                -config ${SH_PATH}/my_conf/openssl.cnf---${NAME}  \
                 -extensions v3_req  \
-                -config ${SH_PATH}/my_conf/openssl.cnf---${NAME}  2>&1  \
-                | tee /tmp/${SH_NAME}-${NAME}-crt.log"
+                2>&1  |  tee /tmp/${SH_NAME}-${NAME}-crt.log"
             expect {
                 "Sign the certificate?" { send "y\r"; exp_continue }
                 "1 out of 1 certificate requests certified, commit?" { send "y\r" }
@@ -114,9 +114,9 @@ EOF
     else
         openssl ca  -in ${SH_PATH}/from_user_csr/${NAME}.csr  \
             -out ${SH_PATH}/to_user_crt/${NAME}.crt  \
+            -config ${SH_PATH}/my_conf/openssl.cnf---${NAME}  \
             -extensions v3_req  \
-            -config ${SH_PATH}/my_conf/openssl.cnf---${NAME}  2>&1  \
-            | tee /tmp/${SH_NAME}-${NAME}-crt.log
+            2>&1  |  tee /tmp/${SH_NAME}-${NAME}-crt.log
     fi
     # 成功？
     if [ `grep -q 'Data Base Updated' /tmp/${SH_NAME}-${NAME}-crt.log; echo $?` -ne 0 ]; then
