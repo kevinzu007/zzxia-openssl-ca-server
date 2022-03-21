@@ -396,6 +396,8 @@ authorityKeyIdentifier = keyid:always,issuer
 #basicConstraints = critical,CA:true
 # So we do this instead.
 basicConstraints = CA:true
+# pathlen代表CA路径层数，CA最多有2层:CA->subCA1-Subca2->End User Certificate
+#basicConstraints = critical,CA:TRUE,pathlen:2
 
 
 # 密钥用法：这是一个典型的CA证书，然而，由于它将阻止它被用作测试自签名证书，因此在默认情况下最好不要使用它
