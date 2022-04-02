@@ -54,26 +54,30 @@ case $1 in
 esac
 
 
-
-rm -f  ca*pem
+# rm
 rm -f  index.txt*
 rm -f  serial*
 rm -f  crlnumber*
 
+rm -f  ca*pem
+rm -rf  private/*
+
+rm -rf  newcerts/*
+rm -rf  certs/*
+rm -rf  crl/*
+
+rm -rf  from_user_csr/*
+rm -rf  to_user_crt/*
+
+find  my_conf/*  ! -iname  env.sh* -exec rm -f {} \;
+
+
+# create
 > index.txt
 echo "01"  > serial
 echo "01"  > crlnumber
 
 
-rm -rf  certs/*
-rm -rf  crl/*
-rm -rf  from_user_csr/*
-rm -rf  newcerts/*
-rm -rf  private/*
-rm -rf  to_user_crt/*
-
-
-find  my_conf/*  ! -iname  env.sh* -exec rm -f {} \;
 echo "OK，初始化已完成！"
 
 
