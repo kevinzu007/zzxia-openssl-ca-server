@@ -581,44 +581,44 @@ F_CERT_USE_FOR_VAR()
     # Do
     case ${CERT_USE_FOR} in
         1|ca)
-            export MY_KEY_USAGE='keyUsage = nonRepudiation,keyCertSign,cRLSign'
-            export MY_EXTENDED_KEY_USAGE=''
+            export MY_KEY_USAGE_S='nonRepudiation,keyCertSign,cRLSign'
+            export MY_EXTENDED_KEY_USAGE_S=''
             ;;
         2|code)
-            export MY_KEY_USAGE='keyUsage = digitalSignature'
-            export MY_EXTENDED_KEY_USAGE='extendedKeyUsage = codeSigning'
+            export MY_KEY_USAGE_S='digitalSignature'
+            export MY_EXTENDED_KEY_USAGE_S='codeSigning'
             ;;
         3|computer)
-            export MY_KEY_USAGE='keyUsage = digitalSignature,keyAgreement'
-            export MY_EXTENDED_KEY_USAGE='extendedKeyUsage = serverAuth'
+            export MY_KEY_USAGE_S='digitalSignature,keyAgreement'
+            export MY_EXTENDED_KEY_USAGE_S='serverAuth'
             ;;
         4|webserver)
-            export MY_KEY_USAGE='keyUsage = digitalSignature,nonRepudiation,keyEncipherment,dataEncipherment,keyAgreement'
-            export MY_EXTENDED_KEY_USAGE='extendedKeyUsage = serverAuth'
+            export MY_KEY_USAGE_S='digitalSignature,nonRepudiation,keyEncipherment,dataEncipherment,keyAgreement'
+            export MY_EXTENDED_KEY_USAGE_S='serverAuth'
             ;;
         5|client)
-            export MY_KEY_USAGE='keyUsage = digitalSignature,nonRepudiation,keyEncipherment,dataEncipherment'
-            export MY_EXTENDED_KEY_USAGE='extendedKeyUsage = clientAuth'
+            export MY_KEY_USAGE_S='digitalSignature,nonRepudiation,keyEncipherment,dataEncipherment'
+            export MY_EXTENDED_KEY_USAGE_S='clientAuth'
             ;;
         6|trustlist)
-            export MY_KEY_USAGE='keyUsage = digitalSignature'
-            export MY_EXTENDED_KEY_USAGE='extendedKeyUsage = msCTLSign'
+            export MY_KEY_USAGE_S='digitalSignature'
+            export MY_EXTENDED_KEY_USAGE_S='msCTLSign'
             ;;
         7|timestamp)
-            export MY_KEY_USAGE='keyUsage = digitalSignature,nonRepudiation,keyEncipherment,dataEncipherment'
-            export MY_EXTENDED_KEY_USAGE='extendedKeyUsage = timeStamping'
+            export MY_KEY_USAGE_S='digitalSignature,nonRepudiation,keyEncipherment,dataEncipherment'
+            export MY_EXTENDED_KEY_USAGE_S='timeStamping'
             ;;
         8|ipsec)
-            export MY_KEY_USAGE='keyUsage = digitalSignature,nonRepudiation,keyEncipherment,dataEncipherment'
-            export MY_EXTENDED_KEY_USAGE='extendedKeyUsage = 1.3.6.1.5.5.8.2.2'
+            export MY_KEY_USAGE_S='digitalSignature,nonRepudiation,keyEncipherment,dataEncipherment'
+            export MY_EXTENDED_KEY_USAGE_S='1.3.6.1.5.5.8.2.2'
             ;;
         9|email)
-            export MY_KEY_USAGE='keyUsage = digitalSignature,nonRepudiation,keyEncipherment,dataEncipherment'
-            export MY_EXTENDED_KEY_USAGE='extendedKeyUsage = emailProtection'
+            export MY_KEY_USAGE_S='digitalSignature,nonRepudiation,keyEncipherment,dataEncipherment'
+            export MY_EXTENDED_KEY_USAGE_S='emailProtection'
             ;;
         10|smartcard)
-            export MY_KEY_USAGE='keyUsage = digitalSignature,keyAgreement,decipherOnly'
-            export MY_EXTENDED_KEY_USAGE='extendedKeyUsage = 1.3.6.1.4.1.311.10.3.11,msEFS,1.3.6.1.4.1.311.20.2.2'
+            export MY_KEY_USAGE_S='digitalSignature,keyAgreement,decipherOnly'
+            export MY_EXTENDED_KEY_USAGE_S='1.3.6.1.4.1.311.10.3.11,msEFS,1.3.6.1.4.1.311.20.2.2'
             ;;
         *)
             #echo -e "\n峰哥说：配置文件【/my_conf/env.sh---你的证书名称】中的参数【CERT_USE_FOR】设置错误，请检查\n"

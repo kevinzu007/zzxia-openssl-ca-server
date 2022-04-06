@@ -124,7 +124,7 @@ F_CSR_TO_CNF()
         return 1
     else
         # 查询【key_usage.md】获取参数值，然后sed添加到配置文件${SH_PATH}/my_conf/openssl.cnf---${NAME}中
-	#sed -i "/^# keyUsage = 用逗号分隔/a\\${MY_KEY_USAGE}"  ${SH_PATH}/my_conf/openssl.cnf---${NAME}
+        #sed -i "/^# keyUsage = 用逗号分隔/a\keyUsage = ${MY_KEY_USAGE_S}"  ${SH_PATH}/my_conf/openssl.cnf---${NAME}
         echo -n "\n峰哥说：这个功能还没做完，主要觉得大概率没人用这个功能，你要你搞下吧 :-)\n"
     fi
     #
@@ -134,7 +134,7 @@ F_CSR_TO_CNF()
         | sed 's/^ *//' )
     if [ $? -eq 0 ]; then
         # 查询【key_usage.md】获取参数值，然后sed添加到配置文件${SH_PATH}/my_conf/openssl.cnf---${NAME}中
-	#sed -i "/^# extendedKeyUsage = 用逗号分隔/a\\${MY_EXTENDED_KEY_USAGE}"  ${SH_PATH}/my_conf/openssl.cnf---${NAME}
+        #sed -i "/^# extendedKeyUsage = 用逗号分隔/a\extendedKeyUsage = ${MY_EXTENDED_KEY_USAGE_S}"  ${SH_PATH}/my_conf/openssl.cnf---${NAME}
         echo -n "\n峰哥说：这个功能还没做完，主要觉得大概率没人用这个功能，你要你搞下吧 :-)\n"
     fi
     #
