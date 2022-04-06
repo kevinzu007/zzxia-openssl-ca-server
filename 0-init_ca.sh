@@ -59,7 +59,8 @@ rm -f  index.txt*
 rm -f  serial*
 rm -f  crlnumber*
 
-rm -f  ca*pem
+rm -f  ca.pem.*
+rm -f  ca.der.*
 rm -rf  private/*
 
 rm -rf  newcerts/*

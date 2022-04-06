@@ -79,8 +79,8 @@ crlnumber   = \$dir/crlnumber   # the current crl number，手动设置初始值
                                 # must be commented out to leave a V1 CRL(当保持crl为V1版本时，需要注释掉此项)
 
 # ca证书等
-certificate = \$dir/ca.crt.pem          # The CA certificate
-private_key = \$dir/private/ca.key.pem  # The private key
+certificate = \$dir/ca.pem.crt          # The CA certificate
+private_key = \$dir/private/ca.pem.key  # The private key
 RANDFILE    = \$dir/private/.rand       # private random number file
 
 # 调用证书扩展段：usr_cert

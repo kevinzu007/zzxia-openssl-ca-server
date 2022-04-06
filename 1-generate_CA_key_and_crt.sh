@@ -101,37 +101,37 @@ fi
 
 
 # 私钥
-if [ -f private/ca.key.pem ]; then
+if [ -f private/ca.pem.key ]; then
     echo "CA私钥已存在，跳过！"
-    echo "    【${SH_PATH}/private/ca.key.pem】"
+    echo "    【${SH_PATH}/private/ca.pem.key】"
 else
-    openssl genrsa -out private/ca.key.pem ${PRIVATEKEY_BITS}
+    openssl genrsa -out private/ca.pem.key ${PRIVATEKEY_BITS}
 fi
 
 
 # csr
 openssl req -new  \
-    -key private/ca.key.pem  \
-    -out ca.csr.pem  \
+    -key private/ca.pem.key  \
+    -out ca.pem.csr  \
     -config  ${SH_PATH}/my_conf/openssl.cnf---${NAME}
 
 
 # 证书
-if [ -f ca.crt.pem ]; then
+if [ -f ca.pem.crt ]; then
     echo "CA证书已存在，跳过！"
-    echo "    【${SH_PATH}/ca.crt.pem】"
+    echo "    【${SH_PATH}/ca.pem.crt】"
 else
     openssl x509 -days ${CERT_DAYS}  \
-        -req  -in ca.csr.pem  \
-        -signkey private/ca.key.pem  \
-        -out ca.crt.pem  \
+        -req  -in ca.pem.csr  \
+        -signkey private/ca.pem.key  \
+        -out ca.pem.crt  \
         -extfile ${SH_PATH}/my_conf/openssl.cnf---${NAME}  \
         -extensions v3_req
     echo "OK，CA私钥与证书已经生成："
-    echo "    私钥：【${SH_PATH}/private/ca.key.pem】"
-    echo "    证书：【${SH_PATH}/ca.crt.pem】"
-    openssl x509  -outform der  -in ca.crt.pem  -out ca.crt.der
-    echo "    二进制证书：【${SH_PATH}/ca.crt.der】"
+    echo "    私钥：【${SH_PATH}/private/ca.pem.key】"
+    echo "    证书：【${SH_PATH}/ca.pem.crt】"
+    openssl x509  -outform der  -in ca.pem.crt  -out ca.der.crt
+    echo "    二进制证书：【${SH_PATH}/ca.der.crt】"
 fi
 
 

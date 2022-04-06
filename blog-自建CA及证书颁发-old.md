@@ -11,8 +11,8 @@
 ```text
 kevin@kevin-TM1701:~/gaoshi/zzxia-CA-openssl$ tree
 .
-├── ca.crt.pem
-├── ca.csr.pem
+├── ca.pem.crt
+├── ca.pem.csr
 ├── certs
 ├── crl
 ├── crlnumber
@@ -31,7 +31,7 @@ kevin@kevin-TM1701:~/gaoshi/zzxia-CA-openssl$ tree
 ├── openssl.cnf---c919.lan
 ├── openssl.cnf---zjlh.lan
 ├── private
-│   └── ca.key.pem
+│   └── ca.pem.key
 ├── readme.md
 ├── serial
 ├── serial.old
@@ -49,8 +49,8 @@ kevin@kevin-TM1701:~/gaoshi/zzxia-CA-openssl$ tree
 ```
 其他目录都是依据openssl.conf创建：
 ```text
-* private    ：存放ca的秘钥ca.key.pem的目录与文件名
-* ca.crt.pem ：ca证书
+* private    ：存放ca的秘钥ca.pem.key的目录与文件名
+* ca.pem.crt ：ca证书
 * index.txt  ：ca数据库，初始值为空
 * serial     ：下一个证书的编号，初始为两位数，比如：01
 * crlnumber  ：下一个吊销证书的编号，初始为两位数，比如：01
@@ -68,12 +68,12 @@ echo '01'  > crlnumber
 
 ### 1.2 生成CA私钥及证书
 ```
-openssl genrsa -out private/ca.key.pem 4096
-openssl req -new  -key private/ca.key.pem  -out ca.csr.pem
-openssl x509 -days 3650 -req  -in ca.csr.pem  -signkey private/ca.key.pem  -out ca.crt.pem
+openssl genrsa -out private/ca.pem.key 4096
+openssl req -new  -key private/ca.pem.key  -out ca.pem.csr
+openssl x509 -days 3650 -req  -in ca.pem.csr  -signkey private/ca.pem.key  -out ca.pem.crt
 ```
 * 自签名证书无法使用配置文件，CA服务器证书也是自签名证书，所以也不能使用配置文件
-* 生成的证书都是pem格式的，文件名是ca.crt.pem或者ca.crt都无所谓
+* 生成的证书都是pem格式的，文件名是ca.pem.crt或者ca.crt都无所谓
 
 
 ### 1.3 证书颁发之配置文件准备openssl.cnf
@@ -324,7 +324,7 @@ openssl crl -in crl.pem -noout -text
 ```
 # ubuntu
 #sudo  cp gc-ca.crt  /usr/local/share/ca-certificates/
-sudo  cp gc-ca.crt.pem  /usr/local/share/ca-certificates/
+sudo  cp gc-ca.pem.crt  /usr/local/share/ca-certificates/
 sudo update-ca-certificates
 
 # centos
