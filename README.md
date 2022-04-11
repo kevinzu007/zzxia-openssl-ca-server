@@ -1,6 +1,7 @@
 # zzxia-openssl-ca-server
 
 ## 1 介绍
+
 这是基于openssl的CA服务器。你可以用它秒建自己的专属CA服务器，以方便为用户生成私钥、颁发证书、吊销证书、证书续期。项目是产品化的，不用修改代码就可以管理CA服务器整个生命周期，但也没有意愿给他做一个web页面交互，这样会增加软件的复杂性，也不符合运维思想。
 
 
@@ -8,6 +9,7 @@
 ### 1.1 背景
 
 由于现在https的盛行，我们经常需要在内网服务器、手机、PC上使用证书（内网域名没法使用免费的Letsencrypt证书），但多数时候大家只会生成自签名证书，不会以CA的方式颁发证书，更不会让用户安装CA证书，造成用户在使用过程中总是提示不安全，浪费时间且体验非常糟糕，再者，颁发证书的相关信息从来不保存，不具延续性，不是正经人的做法，哈哈哈哈哈哈哈哈哈！
+
 另外：OpenSSL证书相关知识还是有点复杂的（虽然一般用的很简单），特别是一些概念，很多人搞不清用途与区别，所以生成较为复杂的证书就会走一些弯路（有别于简单的自签名证书），希望这个可以帮到你。也可以帮到我自己，免得要用的时候又得折腾，因为长时间不用，容易遗忘，算是知识的固化吧。
 
 
@@ -92,11 +94,13 @@ $ tree
 
 
 ## 4 使用说明
+
 所有脚本都提供了`$0 -h|--help`参数，查看帮助即可。
 
 
 
 ### 4.1 搭建CA
+
 1. 运行`./0-init_ca.sh -y`进行初始化
 2. 基于`./my_conf/env.sh---CA.sample`创建`./my_conf/env.sh---CA`CA的环境变量文件
 3. 运行`1-generate_CA_key_and_crt.sh -y`以生成CA服务器私钥与自签名证书
@@ -114,6 +118,7 @@ $ tree
 #### 4.2.1 一步为用户生成私钥、证书请求、证书
 
 >程序流程图：
+
 ```mermaid
 graph LR;
 0(CA私钥)
@@ -127,7 +132,9 @@ graph LR;
 3-->6
 0-->6
 ```
+
 >帮助：
+
 ```bash
 $ ./m-3in1-generate_user_key-csr-crt.sh -h
 
@@ -169,13 +176,17 @@ $ ./m-3in1-generate_user_key-csr-crt.sh -h
 #### 4.2.2 分步骤为用户生成私钥、证书请求、证书
 
 1. 生成私钥：
+
 >程序流程图：
+
 ```mermaid
 graph LR;
 1(证书相关名称)
 1-->4(证书相关名称.key)
 ```
+
 >帮助：
+
 ```bash
 $ ./m-1-generate_user_key.sh -h
 
@@ -207,7 +218,9 @@ $ ./m-1-generate_user_key.sh -h
 ```
 
 2. 生成证书请求：
+
 >程序流程图：
+
 ```mermaid
 graph LR;
 1(证书相关名称)
@@ -217,7 +230,9 @@ graph LR;
 1-->4(证书相关名称.key)
 4-->5
 ```
+
 >帮助：
+
 ```bash
 $ ./m-2-generate_user_csr.sh -h
 
@@ -248,7 +263,9 @@ $ ./m-2-generate_user_csr.sh -h
 ```
 
 3. 颁发证书（证书第一次颁发、证书续期重新颁发）：
+
 >程序流程图：
+
 ```mermaid
 graph LR;
 0(CA私钥)
@@ -259,6 +276,7 @@ graph LR;
 3-->6
 0-->6
 ```
+
 或者：
 
 ```mermaid
@@ -273,6 +291,7 @@ graph LR;
 ```
 
 >帮助：
+
 ```bash
 $ ./m-3-generate_user_crt.sh -h
 
@@ -310,6 +329,7 @@ $ ./m-3-generate_user_crt.sh -h
         ./m-3-generate_user_crt.sh  -f /path/to/xxx.csr  -n xxxxx
         ./m-3-generate_user_crt.sh  -c 4096  -d 730  -f /path/to/xxx.csr  -n xxxxx
 ```
+
 > 如果曾经颁发的证书过期了，只需再次运行`m-3-generate_user_crt.sh`就可以了。
 
 
