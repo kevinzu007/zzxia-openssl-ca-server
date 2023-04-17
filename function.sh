@@ -635,7 +635,7 @@ F_CERT_USE_FOR_VAR()
             export MY_EXTENDED_KEY_USAGE_S='1.3.6.1.4.1.311.10.3.11,msEFS,1.3.6.1.4.1.311.20.2.2'
             ;;
         *)
-            #echo -e "\n峰哥说：配置文件【/my_conf/env.sh---你的证书名称】中的参数【CERT_USE_FOR】设置错误，请检查\n"
+            #echo -e "\n峰哥说：配置文件【/my_conf/env.sh--你的证书名称】中的参数【CERT_USE_FOR】设置错误，请检查\n"
             return 1
             ;;
     esac

@@ -34,7 +34,7 @@
 3. 【Fork】她，为她增加新功能，修Bug，让她更加卡哇伊；
 4. 【Issue】她，告诉她有哪些小脾气，她会改的，手动小绵羊；
 5. 【打赏】她，为她买jk；
-<img src="https://img-blog.csdnimg.cn/20210429155627295.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3poZl9zeQ==,size_16,color_FFFFFF,t_70#pic_center" alt="打赏" style="zoom:20%;" />
+<img src="https://gitee.com/zhf_sy/pic-bed/raw/master/dao.png" alt="打赏" style="zoom:40%;" />
 
 
 
@@ -74,9 +74,9 @@ $ tree
 ├── m-4-revoke_user_crt.sh
 ├── m-5-generate_CA_crl.sh
 ├── my_conf
-│   ├── env.sh---CA.sample
-│   ├── env.sh---model
-│   └── env.sh---test.lan
+│   ├── env.sh--CA.sample
+│   ├── env.sh--model
+│   └── env.sh--test.lan
 ├── README.md
 └── serial
 
@@ -102,7 +102,7 @@ $ tree
 ### 4.1 搭建CA
 
 1. 运行`./0-init_ca.sh -y`进行初始化
-2. 基于`./my_conf/env.sh---CA.sample`创建`./my_conf/env.sh---CA`CA的环境变量文件
+2. 基于`./my_conf/env.sh--CA.sample`创建`./my_conf/env.sh--CA`CA的环境变量文件
 3. 运行`1-generate_CA_key_and_crt.sh -y`以生成CA服务器私钥与自签名证书
 > 以上根据自己的信息填写即可
 
@@ -111,7 +111,7 @@ $ tree
 ### 4.2 日常使用（为用户生成私钥、证书请求、证书）
 
 > 运行脚本前，请先查看帮助，帮助中有相关脚本的依赖文件、参数说明及示例！
-> 多数脚本须依赖基于`./my_conf/env.sh---model`创建的`./my_conf/env.sh---证书相关名称`环境变量文件，仓库中提供了一个示例（test.lan）`./my_conf/env.sh---test.lan`供参考。
+> 多数脚本须依赖基于`./my_conf/env.sh--model`创建的`./my_conf/env.sh--证书相关名称`环境变量文件，仓库中提供了一个示例（test.lan）`./my_conf/env.sh--test.lan`供参考。
 
 
 
@@ -124,8 +124,8 @@ graph LR;
 0(CA私钥)
 1(证书相关名称)
 1-->4(证书相关名称.key)
-1-->2(env.sh---证书相关名称)
-2-->3(openssl.cnf---证书相关名称)
+1-->2(env.sh--证书相关名称)
+2-->3(openssl.cnf--证书相关名称)
 3-->5(证书相关名称.csr)
 4-->5
 5-->6(证书相关名称.crt)
@@ -141,7 +141,7 @@ $ ./m-3in1-generate_user_key-csr-crt.sh -h
     用途：用于生成用户秘钥与证书
     依赖：
         ./function.sh
-        ./my_conf/env.sh---${NAME}      #--- 此文件须自行基于【./my_conf/env.sh---model】创建
+        ./my_conf/env.sh--${NAME}      #--- 此文件须自行基于【./my_conf/env.sh--model】创建
     注意：
     用法:
         ./m-3in1-generate_user_key-csr-crt.sh  [-h|--help]
@@ -157,7 +157,7 @@ $ ./m-3in1-generate_user_key-csr-crt.sh -h
         -h|--help      此帮助
         -n|--name      指定名称，用以确定用户证书相关名称前缀及env、cnf文件名称后缀。
                        即：【私钥、证书请求、证书】的文件名称前缀：test.com.key、test.com.csr、test.com.crt
-                           【环境变量、配置】文件名的后缀：env.sh---test.com、openssl.cnf---test.com
+                           【环境变量、配置】文件名的后缀：env.sh--test.com、openssl.cnf--test.com
         -p|--privatekey-bits  私钥长度，默认2048
         -c|--cert-bits 证书长度，默认2048
         -d|--days      证书有效期，默认365天
@@ -208,7 +208,7 @@ $ ./m-1-generate_user_key.sh -h
         -h|--help      此帮助
         -n|--name      指定名称，用以确定用户证书相关名称前缀及env、cnf文件名称后缀。
                        即：【私钥、证书请求、证书】的文件名称前缀：test.com.key、test.com.csr、test.com.crt
-                           【环境变量、配置】文件名的后缀：env.sh---test.com、openssl.cnf---test.com
+                           【环境变量、配置】文件名的后缀：env.sh--test.com、openssl.cnf--test.com
         -p|--privatekey-bits  私钥长度，默认2048
         -q|--quiet     静默方式运行
     示例:
@@ -224,8 +224,8 @@ $ ./m-1-generate_user_key.sh -h
 ```mermaid
 graph LR;
 1(证书相关名称)
-1-->2(env.sh---证书相关名称)
-2-->3(openssl.cnf---证书相关名称)
+1-->2(env.sh--证书相关名称)
+2-->3(openssl.cnf--证书相关名称)
 3-->5(证书相关名称.csr)
 1-->4(证书相关名称.key)
 4-->5
@@ -239,7 +239,7 @@ $ ./m-2-generate_user_csr.sh -h
     用途：用于生成用户证书请求
     依赖：
         ./function.sh
-        ./my_conf/env.sh---${NAME}      #--- 此文件须自行基于【./my_conf/env.sh---model】创建
+        ./my_conf/env.sh--${NAME}      #--- 此文件须自行基于【./my_conf/env.sh--model】创建
     注意：
     用法:
         ./m-2-generate_user_csr.sh  [-h|--help]
@@ -255,7 +255,7 @@ $ ./m-2-generate_user_csr.sh -h
         -h|--help      此帮助
         -n|--name      指定名称，用以确定用户证书相关名称前缀及env、cnf文件名称后缀。
                        即：【私钥、证书请求、证书】的文件名称前缀：test.com.key、test.com.csr、test.com.crt
-                           【环境变量、配置】文件名的后缀：env.sh---test.com、openssl.cnf---test.com
+                           【环境变量、配置】文件名的后缀：env.sh--test.com、openssl.cnf--test.com
         -q|--quiet     静默方式运行
     示例:
         ./m-2-generate_user_csr.sh  -n test.com
@@ -270,7 +270,7 @@ $ ./m-2-generate_user_csr.sh -h
 graph LR;
 0(CA私钥)
 1(证书相关名称)
-1-->3(openssl.cnf---证书相关名称)
+1-->3(openssl.cnf--证书相关名称)
 1-->5(证书相关名称.csr)
 5-->6(证书相关名称.crt)
 3-->6
@@ -283,7 +283,7 @@ graph LR;
 graph LR;
 0(CA私钥)
 1(证书相关名称)
-1-->3(openssl.cnf---证书相关名称)
+1-->3(openssl.cnf--证书相关名称)
 5(来自外部.csr)-->3
 5-->6(证书相关名称.crt)
 3-->6
@@ -298,7 +298,7 @@ $ ./m-3-generate_user_crt.sh -h
     用途：用于颁发用户证书
     依赖：
         ./function.sh
-        ./my_conf/env.sh---${NAME}      #--- 此文件须自行基于【./my_conf/env.sh---model】创建，当使用外部证书请求文件时，无须此配置文件
+        ./my_conf/env.sh--${NAME}      #--- 此文件须自行基于【./my_conf/env.sh--model】创建，当使用外部证书请求文件时，无须此配置文件
     注意：
     用法:
         ./m-3-generate_user_crt.sh  [-h|--help]
@@ -314,7 +314,7 @@ $ ./m-3-generate_user_crt.sh -h
         -h|--help      此帮助
         -n|--name      指定名称，用以确定用户证书相关名称前缀及env、cnf文件名称后缀。
                        即：【私钥、证书请求、证书】的文件名称前缀：test.com.key、test.com.csr、test.com.crt
-                           【环境变量、配置】文件名的后缀：env.sh---test.com、openssl.cnf---test.com
+                           【环境变量、配置】文件名的后缀：env.sh--test.com、openssl.cnf--test.com
         -f|--csr-file  指定外部用户证书请求文件。一般只有在用户使用其他工具生成证书请求时使用此项
         -c|--cert-bits 证书长度，默认2048
         -d|--days      证书有效期，默认365天

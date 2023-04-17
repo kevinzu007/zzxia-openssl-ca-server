@@ -20,7 +20,7 @@ F_HELP()
     用途：用于颁发用户证书
     依赖：
         ./function.sh
-        ./my_conf/env.sh---\${NAME}      #--- 此文件须自行基于【./my_conf/env.sh---model】创建，当使用外部证书请求文件时，无须此配置文件
+        ./my_conf/env.sh--\${NAME}      #--- 此文件须自行基于【./my_conf/env.sh--model】创建，当使用外部证书请求文件时，无须此配置文件
     注意：
     用法:
         $0  [-h|--help]
@@ -36,7 +36,7 @@ F_HELP()
         -h|--help      此帮助
         -n|--name      指定名称，用以确定用户证书相关名称前缀及env、cnf文件名称后缀。
                        即：【私钥、证书请求、证书】的文件名称前缀：test.com.key、test.com.csr、test.com.crt
-                           【环境变量、配置】文件名的后缀：env.sh---test.com、openssl.cnf---test.com
+                           【环境变量、配置】文件名的后缀：env.sh--test.com、openssl.cnf--test.com
         -f|--csr-file  指定外部用户证书请求文件。一般只有在用户使用其他工具生成证书请求时使用此项
         -c|--cert-bits 证书长度，默认2048
         -d|--days      证书有效期，默认365天
@@ -103,7 +103,7 @@ F_CSR_TO_CNF()
         let i=$i+1
     done
     #
-    F_ECHO_OPENSSL_CNF > "${SH_PATH}/my_conf/openssl.cnf---${NAME}"
+    F_ECHO_OPENSSL_CNF > "${SH_PATH}/my_conf/openssl.cnf--${NAME}"
     #
     # sed 追加
     # 基本约束：是否为CA证书请求
@@ -112,7 +112,7 @@ F_CSR_TO_CNF()
         | sed 's/^ *//'  \
         | sed 's/,//g' )
     if [ "${CSR_BASIC}" = 'CA:TRUE' ]; then
-        sed -i 's/CA:FALSE/CA:TRUE/'  ${SH_PATH}/my_conf/openssl.cnf---${NAME}
+        sed -i 's/CA:FALSE/CA:TRUE/'  ${SH_PATH}/my_conf/openssl.cnf--${NAME}
     fi
     #
     # 秘钥用法
@@ -123,8 +123,8 @@ F_CSR_TO_CNF()
         echo -e "\n峰哥说：秘钥用法为空，不可能的，请检查你的证书请求文件\n"
         return 1
     else
-        # 查询【key_usage.md】获取参数值，然后sed添加到配置文件${SH_PATH}/my_conf/openssl.cnf---${NAME}中
-        #sed -i "/^# keyUsage = 用逗号分隔/a\keyUsage = ${MY_KEY_USAGE_S}"  ${SH_PATH}/my_conf/openssl.cnf---${NAME}
+        # 查询【key_usage.md】获取参数值，然后sed添加到配置文件${SH_PATH}/my_conf/openssl.cnf--${NAME}中
+        #sed -i "/^# keyUsage = 用逗号分隔/a\keyUsage = ${MY_KEY_USAGE_S}"  ${SH_PATH}/my_conf/openssl.cnf--${NAME}
         echo -n "\n峰哥说：这个功能还没做完，主要觉得大概率没人用这个功能，你要你搞下吧 :-)\n"
     fi
     #
@@ -133,8 +133,8 @@ F_CSR_TO_CNF()
         | awk '/X509v3 Key Usage:/{getline; print}'  \
         | sed 's/^ *//' )
     if [ $? -eq 0 ]; then
-        # 查询【key_usage.md】获取参数值，然后sed添加到配置文件${SH_PATH}/my_conf/openssl.cnf---${NAME}中
-        #sed -i "/^# extendedKeyUsage = 用逗号分隔/a\extendedKeyUsage = ${MY_EXTENDED_KEY_USAGE_S}"  ${SH_PATH}/my_conf/openssl.cnf---${NAME}
+        # 查询【key_usage.md】获取参数值，然后sed添加到配置文件${SH_PATH}/my_conf/openssl.cnf--${NAME}中
+        #sed -i "/^# extendedKeyUsage = 用逗号分隔/a\extendedKeyUsage = ${MY_EXTENDED_KEY_USAGE_S}"  ${SH_PATH}/my_conf/openssl.cnf--${NAME}
         echo -n "\n峰哥说：这个功能还没做完，主要觉得大概率没人用这个功能，你要你搞下吧 :-)\n"
     fi
     #
@@ -164,7 +164,7 @@ F_GEN_CRT()
             spawn  bash -c  "openssl ca  -in ${F_CSR_FILE}  \
                 -out ${SH_PATH}/to_user_crt/${NAME}.crt  \
                 -extensions v3_req  \
-                -config ${SH_PATH}/my_conf/openssl.cnf---${NAME}  \
+                -config ${SH_PATH}/my_conf/openssl.cnf--${NAME}  \
                 2>&1  |  tee /tmp/${SH_NAME}-${NAME}-crt.log"
             expect {
                 "Sign the certificate?" { send "y\r"; exp_continue }
@@ -175,7 +175,7 @@ EOF
     else
         openssl ca  -in ${F_CSR_FILE}  \
             -out ${SH_PATH}/to_user_crt/${NAME}.crt  \
-            -config ${SH_PATH}/my_conf/openssl.cnf---${NAME}  \
+            -config ${SH_PATH}/my_conf/openssl.cnf--${NAME}  \
             -extensions v3_req  \
             2>&1  |  tee /tmp/${SH_NAME}-${NAME}-crt.log
     fi
@@ -267,11 +267,11 @@ fi
 
 
 # env
-if [ -f "${SH_PATH}/my_conf/env.sh---${NAME}" ]; then
-    . ${SH_PATH}/my_conf/env.sh---${NAME}     #--- 仅使用 $CERT_BITS、$CERT_DAYS 变量，其他变量会被csr中的值覆盖
+if [ -f "${SH_PATH}/my_conf/env.sh--${NAME}" ]; then
+    . ${SH_PATH}/my_conf/env.sh--${NAME}     #--- 仅使用 $CERT_BITS、$CERT_DAYS 变量，其他变量会被csr中的值覆盖
     . ./function.sh
 else
-    echo -e "\n峰哥说：环境参数文件【${SH_PATH}/my_conf/env.sh---${NAME}】未找到，请基于【${SH_PATH}/my_conf/env.sh---model】创建！\n"
+    echo -e "\n峰哥说：环境参数文件【${SH_PATH}/my_conf/env.sh--${NAME}】未找到，请基于【${SH_PATH}/my_conf/env.sh--model】创建！\n"
     exit 1
 fi
 #

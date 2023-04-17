@@ -20,7 +20,7 @@ F_HELP()
     用途：生成CA服务器私钥与证书
     依赖：
         ./function.sh
-        ./my_conf/env.sh---CA     #--- 此文件须自行基于【./my_conf/env.sh---CA.sample】创建
+        ./my_conf/env.sh--CA     #--- 此文件须自行基于【./my_conf/env.sh--CA.sample】创建
     注意：如果证书已存在，将会跳过
     用法：
         $0  <-h|--help>
@@ -62,32 +62,32 @@ esac
 # env
 NAME='CA'
 #
-if [ -f "${SH_PATH}/my_conf/env.sh---${NAME}" ]; then
-    . ${SH_PATH}/my_conf/env.sh---${NAME}
+if [ -f "${SH_PATH}/my_conf/env.sh--${NAME}" ]; then
+    . ${SH_PATH}/my_conf/env.sh--${NAME}
     . ./function.sh
 else
-    echo -e "\n峰哥说：环境参数文件【${SH_PATH}/my_conf/env.sh---${NAME}】未找到，请基于【${SH_PATH}/my_conf/env.sh---model】创建！\n"
+    echo -e "\n峰哥说：环境参数文件【${SH_PATH}/my_conf/env.sh--${NAME}】未找到，请基于【${SH_PATH}/my_conf/env.sh--model】创建！\n"
     exit 1
 fi
 # 生成秘钥用法变量
 F_CERT_USE_FOR_VAR
 if [ $? -ne 0 ]; then
-    echo -e "\n峰哥说：配置文件【${SH_PATH}/my_conf/env.sh---${NAME}】中的参数【CERT_USE_FOR】设置错误，请检查\n"
+    echo -e "\n峰哥说：配置文件【${SH_PATH}/my_conf/env.sh--${NAME}】中的参数【CERT_USE_FOR】设置错误，请检查\n"
     exit 1
 fi
 
 
 # cnf
-F_ECHO_OPENSSL_CNF > ${SH_PATH}/my_conf/openssl.cnf---${NAME}
+F_ECHO_OPENSSL_CNF > ${SH_PATH}/my_conf/openssl.cnf--${NAME}
 # keyUsage
-sed -i "/^# keyUsage = 用逗号分隔/a\keyUsage = ${MY_KEY_USAGE_S}"  ${SH_PATH}/my_conf/openssl.cnf---${NAME}
+sed -i "/^# keyUsage = 用逗号分隔/a\keyUsage = ${MY_KEY_USAGE_S}"  ${SH_PATH}/my_conf/openssl.cnf--${NAME}
 # extendedKeyUsage
 if [ -n "${MY_EXTENDED_KEY_USAGE_S}" ]; then
-    sed -i "/^# extendedKeyUsage = 用逗号分隔/a\extendedKeyUsage = ${MY_EXTENDED_KEY_USAGE_S}"  ${SH_PATH}/my_conf/openssl.cnf---${NAME}
+    sed -i "/^# extendedKeyUsage = 用逗号分隔/a\extendedKeyUsage = ${MY_EXTENDED_KEY_USAGE_S}"  ${SH_PATH}/my_conf/openssl.cnf--${NAME}
 fi
 # CA:TRUE
 if [ "${CERT_USE_FOR}" = '1' -o "${CERT_USE_FOR}" = 'ca' ]; then
-    sed -i 's/CA:FALSE/CA:TRUE/'  ${SH_PATH}/my_conf/openssl.cnf---${NAME}
+    sed -i 's/CA:FALSE/CA:TRUE/'  ${SH_PATH}/my_conf/openssl.cnf--${NAME}
 fi
 
 
@@ -113,7 +113,7 @@ fi
 openssl req -new  \
     -key private/ca.pem.key  \
     -out ca.pem.csr  \
-    -config  ${SH_PATH}/my_conf/openssl.cnf---${NAME}
+    -config  ${SH_PATH}/my_conf/openssl.cnf--${NAME}
 
 
 # 证书
@@ -125,7 +125,7 @@ else
         -req  -in ca.pem.csr  \
         -signkey private/ca.pem.key  \
         -out ca.pem.crt  \
-        -extfile ${SH_PATH}/my_conf/openssl.cnf---${NAME}  \
+        -extfile ${SH_PATH}/my_conf/openssl.cnf--${NAME}  \
         -extensions v3_req
     echo "OK，CA私钥与证书已经生成："
     echo "    私钥：【${SH_PATH}/private/ca.pem.key】"

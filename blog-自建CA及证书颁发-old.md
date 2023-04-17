@@ -28,8 +28,8 @@ kevin@kevin-TM1701:~/gaoshi/zzxia-CA-openssl$ tree
 ├── newcerts
 │   ├── 01.pem
 │   └── 02.pem
-├── openssl.cnf---c919.lan
-├── openssl.cnf---zjlh.lan
+├── openssl.cnf--c919.lan
+├── openssl.cnf--zjlh.lan
 ├── private
 │   └── ca.pem.key
 ├── readme.md
@@ -139,9 +139,9 @@ openssl x509 -in to_user_crt/docker-repo.crt -noout -text
 ```bash
 DOMAIN='zjlh.lan'
 openssl genrsa -out from_user_csr/${DOMAIN}.key  2048
-openssl req -new  -key from_user_csr/${DOMAIN}.key  -out from_user_csr/${DOMAIN}.csr -config  openssl.cnf---${DOMAIN}
+openssl req -new  -key from_user_csr/${DOMAIN}.key  -out from_user_csr/${DOMAIN}.csr -config  openssl.cnf--${DOMAIN}
 openssl req  -in from_user_csr/${DOMAIN}.csr  -noout -text
-openssl ca  -in from_user_csr/${DOMAIN}.csr  -out to_user_crt/${DOMAIN}.crt  -extensions v3_req  -config openssl.cnf---${DOMAIN}
+openssl ca  -in from_user_csr/${DOMAIN}.csr  -out to_user_crt/${DOMAIN}.crt  -extensions v3_req  -config openssl.cnf--${DOMAIN}
 openssl x509  -in to_user_crt/${DOMAIN}.crt  -noout -text
 ```
 
@@ -156,7 +156,7 @@ Generating RSA private key, 2048 bit long modulus
 ..................+++
 e is 65537 (0x10001)
 kevin@kevin-TM1701:~/gaoshi/zzxia-CA-openssl$ 
-kevin@kevin-TM1701:~/gaoshi/zzxia-CA-openssl$ openssl req -new  -key from_user_csr/${DOMAIN}.key  -out from_user_csr/${DOMAIN}.csr -config  openssl.cnf---${DOMAIN}
+kevin@kevin-TM1701:~/gaoshi/zzxia-CA-openssl$ openssl req -new  -key from_user_csr/${DOMAIN}.key  -out from_user_csr/${DOMAIN}.csr -config  openssl.cnf--${DOMAIN}
 You are about to be asked to enter information that will be incorporated
 into your certificate request.
 What you are about to enter is what is called a Distinguished Name or a DN.
@@ -177,8 +177,8 @@ to be sent with your certificate request
 A challenge password []:
 An optional company name []:
 kevin@kevin-TM1701:~/gaoshi/zzxia-CA-openssl$ 
-kevin@kevin-TM1701:~/gaoshi/zzxia-CA-openssl$ openssl ca  -in from_user_csr/${DOMAIN}.csr  -out to_user_crt/${DOMAIN}.crt  -extensions v3_req  -config openssl.cnf---${DOMAIN}
-Using configuration from openssl.cnf---zjlh.lan
+kevin@kevin-TM1701:~/gaoshi/zzxia-CA-openssl$ openssl ca  -in from_user_csr/${DOMAIN}.csr  -out to_user_crt/${DOMAIN}.crt  -extensions v3_req  -config openssl.cnf--${DOMAIN}
+Using configuration from openssl.cnf--zjlh.lan
 Check that the request matches the signature
 Signature ok
 Certificate Details:

@@ -20,7 +20,7 @@ F_HELP()
     用途：用于生成用户秘钥与证书
     依赖：
         ./function.sh
-        ./my_conf/env.sh---\${NAME}      #--- 此文件须自行基于【./my_conf/env.sh---model】创建
+        ./my_conf/env.sh--\${NAME}      #--- 此文件须自行基于【./my_conf/env.sh--model】创建
     注意：
     用法:
         $0  [-h|--help]
@@ -36,7 +36,7 @@ F_HELP()
         -h|--help      此帮助
         -n|--name      指定名称，用以确定用户证书相关名称前缀及env、cnf文件名称后缀。
                        即：【私钥、证书请求、证书】的文件名称前缀：test.com.key、test.com.csr、test.com.crt
-                           【环境变量、配置】文件名的后缀：env.sh---test.com、openssl.cnf---test.com
+                           【环境变量、配置】文件名的后缀：env.sh--test.com、openssl.cnf--test.com
         -p|--privatekey-bits  私钥长度，默认2048
         -c|--cert-bits 证书长度，默认2048
         -d|--days      证书有效期，默认365天
@@ -67,7 +67,7 @@ F_GEN_KEY_AND_CRT()
             set timeout 10
             spawn  bash -c  "openssl req -new  -key ${SH_PATH}/from_user_csr/${NAME}.key  \
                 -out ${SH_PATH}/from_user_csr/${NAME}.csr  \
-                -config  ${SH_PATH}/my_conf/openssl.cnf---${NAME}  \
+                -config  ${SH_PATH}/my_conf/openssl.cnf--${NAME}  \
                 2>&1  |  tee /tmp/${SH_NAME}-${NAME}-csr.log"
             expect {
                 "Country Name" { send "\n"; exp_continue }
@@ -85,7 +85,7 @@ EOF
     else
         openssl req -new  -key ${SH_PATH}/from_user_csr/${NAME}.key  \
             -out ${SH_PATH}/from_user_csr/${NAME}.csr  \
-            -config  ${SH_PATH}/my_conf/openssl.cnf---${NAME}  \
+            -config  ${SH_PATH}/my_conf/openssl.cnf--${NAME}  \
             2>&1  |  tee /tmp/${SH_NAME}-${NAME}-csr.log
     fi
     # 成功？
@@ -102,7 +102,7 @@ EOF
             set timeout 10
             spawn  bash -c  "openssl ca  -in ${SH_PATH}/from_user_csr/${NAME}.csr  \
                 -out ${SH_PATH}/to_user_crt/${NAME}.crt  \
-                -config ${SH_PATH}/my_conf/openssl.cnf---${NAME}  \
+                -config ${SH_PATH}/my_conf/openssl.cnf--${NAME}  \
                 -extensions v3_req  \
                 2>&1  |  tee /tmp/${SH_NAME}-${NAME}-crt.log"
             expect {
@@ -114,7 +114,7 @@ EOF
     else
         openssl ca  -in ${SH_PATH}/from_user_csr/${NAME}.csr  \
             -out ${SH_PATH}/to_user_crt/${NAME}.crt  \
-            -config ${SH_PATH}/my_conf/openssl.cnf---${NAME}  \
+            -config ${SH_PATH}/my_conf/openssl.cnf--${NAME}  \
             -extensions v3_req  \
             2>&1  |  tee /tmp/${SH_NAME}-${NAME}-crt.log
     fi
@@ -221,17 +221,17 @@ fi
 
 
 # env
-if [ -f "${SH_PATH}/my_conf/env.sh---${NAME}" ]; then
-    . ${SH_PATH}/my_conf/env.sh---${NAME}
+if [ -f "${SH_PATH}/my_conf/env.sh--${NAME}" ]; then
+    . ${SH_PATH}/my_conf/env.sh--${NAME}
     . ./function.sh
 else
-    echo -e "\n峰哥说：环境参数文件【${SH_PATH}/my_conf/env.sh---${NAME}】未找到，请基于【${SH_PATH}/my_conf/env.sh---model】创建！\n"
+    echo -e "\n峰哥说：环境参数文件【${SH_PATH}/my_conf/env.sh--${NAME}】未找到，请基于【${SH_PATH}/my_conf/env.sh--model】创建！\n"
     exit 1
 fi
 # 生成秘钥用法变量
 F_CERT_USE_FOR_VAR
 if [ $? -ne 0 ]; then
-    echo -e "\n峰哥说：配置文件【${SH_PATH}/my_conf/env.sh---${NAME}】中的参数【CERT_USE_FOR】设置错误，请检查\n"
+    echo -e "\n峰哥说：配置文件【${SH_PATH}/my_conf/env.sh--${NAME}】中的参数【CERT_USE_FOR】设置错误，请检查\n"
     exit 1
 fi
 #
@@ -239,16 +239,16 @@ QUIET=${QUIET:-'no'}
 
 
 # cnf
-F_ECHO_OPENSSL_CNF > ${SH_PATH}/my_conf/openssl.cnf---${NAME}
+F_ECHO_OPENSSL_CNF > ${SH_PATH}/my_conf/openssl.cnf--${NAME}
 # keyUsage
-sed -i "/^# keyUsage = 用逗号分隔/a\keyUsage = ${MY_KEY_USAGE_S}"  ${SH_PATH}/my_conf/openssl.cnf---${NAME}
+sed -i "/^# keyUsage = 用逗号分隔/a\keyUsage = ${MY_KEY_USAGE_S}"  ${SH_PATH}/my_conf/openssl.cnf--${NAME}
 # extendedKeyUsage
 if [ -n "${MY_EXTENDED_KEY_USAGE_S}" ]; then
-    sed -i "/^# extendedKeyUsage = 用逗号分隔/a\extendedKeyUsage = ${MY_EXTENDED_KEY_USAGE_S}"  ${SH_PATH}/my_conf/openssl.cnf---${NAME}
+    sed -i "/^# extendedKeyUsage = 用逗号分隔/a\extendedKeyUsage = ${MY_EXTENDED_KEY_USAGE_S}"  ${SH_PATH}/my_conf/openssl.cnf--${NAME}
 fi
 # CA:TRUE
 if [ "${CERT_USE_FOR}" = '1' -o "${CERT_USE_FOR}" = 'ca' ]; then
-    sed -i 's/CA:FALSE/CA:TRUE/'  ${SH_PATH}/my_conf/openssl.cnf---${NAME}
+    sed -i 's/CA:FALSE/CA:TRUE/'  ${SH_PATH}/my_conf/openssl.cnf--${NAME}
 fi
 
 
