@@ -1,5 +1,11 @@
 # zzxia-openssl-ca-server
 
+
+
+[toc]
+
+
+
 ## 1 介绍
 
 这是基于openssl的CA服务器。你可以用它秒建自己的专属CA服务器，以方便为用户生成私钥、颁发证书、吊销证书、证书续期。项目是产品化的，不用修改代码就可以管理CA服务器整个生命周期，但也没有意愿给他做一个web页面交互，这样会增加软件的复杂性，也不符合运维思想。
@@ -71,8 +77,9 @@ $ tree
 ├── m-2-generate_user_csr.sh
 ├── m-3-generate_user_crt.sh
 ├── m-3in1-generate_user_key-csr-crt.sh
-├── m-4-revoke_user_crt.sh
-├── m-5-generate_CA_crl.sh
+├── m-x-revoke_user_crt.sh
+├── m-x-renew_user_crt.sh
+├── m-x-generate_CA_crl.sh
 ├── my_conf
 │   ├── env.sh--CA.sample
 │   ├── env.sh--model
@@ -295,7 +302,7 @@ graph LR;
 ```bash
 $ ./m-3-generate_user_crt.sh -h
 
-    用途：用于颁发用户证书
+    用途：用于颁发或更新用户证书
     依赖：
         ./function.sh
         ./my_conf/env.sh--${NAME}      #--- 此文件须自行基于【./my_conf/env.sh--model】创建，当使用外部证书请求文件时，无须此配置文件
@@ -330,7 +337,37 @@ $ ./m-3-generate_user_crt.sh -h
         ./m-3-generate_user_crt.sh  -c 4096  -d 730  -f /path/to/xxx.csr  -n xxxxx
 ```
 
-> 如果曾经颁发的证书过期了，只需再次运行`m-3-generate_user_crt.sh`就可以了。
+> 如果曾经颁发的证书过期了，只需再次运行`m-3-generate_user_crt.sh`就可以了，为了便于用户理解，增加了个软连接名称`m-x-renew_user_crt.sh`。
+
+
+
+### 4.3 其他使用
+
+
+
+#### 4.3.1 更新（renew）用户证书
+
+等同【4.2.2 - 3】为用户生成证书，请参考
+
+
+
+#### 4.3.2 吊销（revoke）用户证书
+
+```bash
+./m-x-revoke_user_crt.sh
+```
+
+
+
+#### 4.3.3 吊销（revoke）用户证书
+
+```bash
+./m-x-generate_CA_crl.sh
+```
+
+
+
+
 
 
 ## 5 参与贡献

@@ -17,7 +17,7 @@ cd ${SH_PATH}
 F_HELP()
 {
     echo "
-    用途：用于颁发用户证书
+    用途：用于颁发或更新用户证书
     依赖：
         ./function.sh
         ./my_conf/env.sh--\${NAME}      #--- 此文件须自行基于【./my_conf/env.sh--model】创建，当使用外部证书请求文件时，无须此配置文件
