@@ -1,7 +1,5 @@
 # zzxia-openssl-ca-server
 
-中文名：猪猪侠之OpenCA服务器平台
-
 
 [toc]
 
