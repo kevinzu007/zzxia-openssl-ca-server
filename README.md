@@ -1,7 +1,7 @@
 # zzxia-openssl-ca-server
 
 
-**如果有使用上的问题及其他，可以加wx：`zzxia_ggbond` 群聊解决**
+**如果有使用上的问题或其他，可以加wx：`zzxia_ggbond` 解决。加好友时请注明你来自哪个平台！**
 
 
 [toc]
