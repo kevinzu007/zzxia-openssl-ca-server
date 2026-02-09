@@ -12,6 +12,12 @@ SH_NAME=${0##*/}
 SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd ${SH_PATH}
 
+# 检查openssl是否存在
+if ! command -v openssl &> /dev/null; then
+    echo "错误：openssl未安装，请先安装openssl"
+    exit 1
+fi
+
 
 
 F_HELP()
@@ -61,68 +67,45 @@ F_GEN_KEY_AND_CRT()
     else
         openssl genrsa -out ${SH_PATH}/from_user_csr/${NAME}.key  ${PRIVATEKEY_BITS}
     fi
+    
     # csr
-    if [ "${QUIET}" = 'yes' ]; then
-        expect << EOF
-            set timeout 10
-            spawn  bash -c  "openssl req -new  -key ${SH_PATH}/from_user_csr/${NAME}.key  \
-                -out ${SH_PATH}/from_user_csr/${NAME}.csr  \
-                -config  ${SH_PATH}/my_conf/openssl.cnf--${NAME}  \
-                2>&1  |  tee /tmp/${SH_NAME}-${NAME}-csr.log"
-            expect {
-                "Country Name" { send "\n"; exp_continue }
-                "State or Province Name*" { send "\n"; exp_continue }
-                "Locality Name*" { send "\r"; exp_continue }
-                "Organization Name" { send "\r"; exp_continue }
-                "Organizational Unit Name*" { send "\r"; exp_continue }
-                "Common Name*" { send "\r"; exp_continue }
-                "Email Address*" { send "\r"; exp_continue }
-                "A challenge password*" { send "\r"; exp_continue }
-                "An optional company name*" { send "xxxxxxxxx\n" }
-            }
-            expect eof
-EOF
-    else
-        openssl req -new  -key ${SH_PATH}/from_user_csr/${NAME}.key  \
-            -out ${SH_PATH}/from_user_csr/${NAME}.csr  \
-            -config  ${SH_PATH}/my_conf/openssl.cnf--${NAME}  \
-            2>&1  |  tee /tmp/${SH_NAME}-${NAME}-csr.log
+    openssl req -new  -key ${SH_PATH}/from_user_csr/${NAME}.key  \
+        -out ${SH_PATH}/from_user_csr/${NAME}.csr  \
+        -config  ${SH_PATH}/my_conf/openssl.cnf--${NAME}  \
+        ${QUIET_OPTION} \
+        2>&1  |  tee /tmp/${SH_NAME}-${NAME}-csr.log
+    
+    # 检查CSR是否生成成功
+    if [ ! -f "${SH_PATH}/from_user_csr/${NAME}.csr" ]; then
+        echo -e "\n峰哥说：证书请求生成失败，请检查错误信息\n"
+        return 1
     fi
-    # 成功？
-    #
+    
     # 查看csr信息
     echo -e "\n证书请求信息如下："
     echo '------------------------------------------------------------'
     openssl req  -in ${SH_PATH}/from_user_csr/${NAME}.csr  -noout -text
     echo '------------------------------------------------------------'
-    #
+    
     # crt
-    if [ "${QUIET}" = 'yes' ]; then
-        expect << EOF
-            set timeout 10
-            spawn  bash -c  "openssl ca  -in ${SH_PATH}/from_user_csr/${NAME}.csr  \
-                -out ${SH_PATH}/to_user_crt/${NAME}.crt  \
-                -config ${SH_PATH}/my_conf/openssl.cnf--${NAME}  \
-                -extensions v3_req  \
-                2>&1  |  tee /tmp/${SH_NAME}-${NAME}-crt.log"
-            expect {
-                "Sign the certificate?" { send "y\r"; exp_continue }
-                "1 out of 1 certificate requests certified, commit?" { send "y\r" }
-            }
-            expect eof
-EOF
-    else
-        openssl ca  -in ${SH_PATH}/from_user_csr/${NAME}.csr  \
-            -out ${SH_PATH}/to_user_crt/${NAME}.crt  \
-            -config ${SH_PATH}/my_conf/openssl.cnf--${NAME}  \
-            -extensions v3_req  \
-            2>&1  |  tee /tmp/${SH_NAME}-${NAME}-crt.log
-    fi
-    # 成功？
-    if [ `grep -q 'Data Base Updated' /tmp/${SH_NAME}-${NAME}-crt.log; echo $?` -ne 0 ]; then
-        echo -e "\n峰哥说：证书生成失败\n"
+    openssl ca  -in ${SH_PATH}/from_user_csr/${NAME}.csr  \
+        -out ${SH_PATH}/to_user_crt/${NAME}.crt  \
+        -config ${SH_PATH}/my_conf/openssl.cnf--${NAME}  \
+        -extensions v3_req  \
+        ${QUIET_OPTION} \
+        2>&1  |  tee /tmp/${SH_NAME}-${NAME}-crt.log
+    
+    # 检查证书是否生成成功
+    if [ ! -f "${SH_PATH}/to_user_crt/${NAME}.crt" ]; then
+        echo -e "\n峰哥说：证书生成失败，请检查错误信息\n"
         return 1
     fi
+    
+    # 检查日志中是否有成功信息
+    if ! grep -q 'Data Base Updated' /tmp/${SH_NAME}-${NAME}-crt.log; then
+        echo -e "\n峰哥说：证书生成可能有问题，请检查日志\n"
+    fi
+    
     # 查看crt信息
     echo -e "\n证书签名详情如下："
     echo '------------------------------------------------------------'
@@ -236,6 +219,12 @@ if [ $? -ne 0 ]; then
 fi
 #
 QUIET=${QUIET:-'no'}
+# 设置静默选项
+if [ "${QUIET}" = 'yes' ]; then
+    QUIET_OPTION="-batch"
+else
+    QUIET_OPTION=""
+fi
 
 
 # cnf

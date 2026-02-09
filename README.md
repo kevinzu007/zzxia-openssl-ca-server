@@ -98,7 +98,7 @@ $ tree
 ## 3 安装教程
 
 克隆到服务器上即可。
-需要安装Linux 软件包`expect`。
+需要安装Linux 软件包`openssl`。
 在ubuntu上测试通过，理论上只要是基于Linux内核都行
 
 

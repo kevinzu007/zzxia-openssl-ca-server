@@ -12,6 +12,12 @@ SH_NAME=${0##*/}
 SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd ${SH_PATH}
 
+# 检查openssl是否存在
+if ! command -v openssl &> /dev/null; then
+    echo "错误：openssl未安装，请先安装openssl"
+    exit 1
+fi
+
 
 
 F_HELP()
@@ -49,34 +55,18 @@ F_HELP()
 F_GEN_CSR()
 {
     # csr
-    if [ "${QUIET}" = 'yes' ]; then
-        expect << EOF
-            set timeout 10
-            spawn  bash -c  "openssl req -new  -key ${SH_PATH}/from_user_csr/${NAME}.key  \
-                -out ${SH_PATH}/from_user_csr/${NAME}.csr  \
-                -config  ${SH_PATH}/my_conf/openssl.cnf--${NAME}  \
-                2>&1  |  tee /tmp/${SH_NAME}-${NAME}-csr.log"
-            expect {
-                "Country Name" { send "\n"; exp_continue }
-                "State or Province Name*" { send "\n"; exp_continue }
-                "Locality Name*" { send "\r"; exp_continue }
-                "Organization Name" { send "\r"; exp_continue }
-                "Organizational Unit Name*" { send "\r"; exp_continue }
-                "Common Name*" { send "\r"; exp_continue }
-                "Email Address*" { send "\r"; exp_continue }
-                "A challenge password*" { send "\r"; exp_continue }
-                "An optional company name*" { send "xxxxxxxxx\n" }
-            }
-            expect eof
-EOF
-    else
-        openssl req -new  -key ${SH_PATH}/from_user_csr/${NAME}.key  \
-            -out ${SH_PATH}/from_user_csr/${NAME}.csr  \
-            -config  ${SH_PATH}/my_conf/openssl.cnf--${NAME}  \
-            2>&1  | tee /tmp/${SH_NAME}-${NAME}-csr.log
+    openssl req -new  -key ${SH_PATH}/from_user_csr/${NAME}.key  \
+        -out ${SH_PATH}/from_user_csr/${NAME}.csr  \
+        -config  ${SH_PATH}/my_conf/openssl.cnf--${NAME}  \
+        ${QUIET_OPTION} \
+        2>&1  | tee /tmp/${SH_NAME}-${NAME}-csr.log
+    
+    # 检查是否成功
+    if [ ! -f "${SH_PATH}/from_user_csr/${NAME}.csr" ]; then
+        echo -e "\n峰哥说：证书请求生成失败，请检查错误信息\n"
+        return 1
     fi
-    # 成功？
-    #
+    
     # 查看csr信息
     echo -e "\n证书请求信息如下："
     echo '------------------------------------------------------------'
@@ -154,6 +144,12 @@ if [ $? -ne 0 ]; then
 fi
 #
 QUIET=${QUIET:-'no'}
+# 设置静默选项
+if [ "${QUIET}" = 'yes' ]; then
+    QUIET_OPTION="-batch"
+else
+    QUIET_OPTION=""
+fi
 
 
 # cnf
