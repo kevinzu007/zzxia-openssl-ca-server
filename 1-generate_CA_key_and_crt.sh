@@ -12,6 +12,10 @@ SH_NAME=${0##*/}
 SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd ${SH_PATH}
 
+# 本地env
+GAN_WHAT_FUCK='生成CA密钥和证书'
+NEED_PRIVILEGES='ADMIN'
+
 
 
 F_HELP()
@@ -19,9 +23,9 @@ F_HELP()
     echo "
     用途：生成CA服务器私钥与证书
     特征码：
-        CA证书
+        ${GAN_WHAT_FUCK:-'未命名'}
     权限要求：
-        admin
+        ${NEED_PRIVILEGES:-'未指定'}
     依赖：
         ./function.sh
         ./my_conf/env.sh--CA     #--- 此文件须自行基于【./my_conf/env.sh--CA.sample】创建

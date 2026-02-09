@@ -12,6 +12,10 @@ SH_NAME=${0##*/}
 SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd ${SH_PATH}
 
+# 本地env
+GAN_WHAT_FUCK='生成用户证书请求'
+NEED_PRIVILEGES='ADMIN'
+
 # 检查openssl是否存在
 if ! command -v openssl &> /dev/null; then
     echo "错误：openssl未安装，请先安装openssl"
@@ -25,16 +29,16 @@ F_HELP()
     echo "
     用途：用于生成用户证书请求
     特征码：
-        CA证书
+        ${GAN_WHAT_FUCK:-'未命名'}
     权限要求：
-        admin
+        ${NEED_PRIVILEGES:-'未指定'}
     依赖：
         ./function.sh
         ./my_conf/env.sh--\${NAME}      #--- 此文件须自行基于【./my_conf/env.sh--model】创建
     注意：
     用法:
         $0  -h|--help
-        $0  -n|--name <证书相关名称>  [-q|--quiet]
+        $0  {-n|--name <证书相关名称>}  [-q|--quiet]
     参数规范：
         无包围符号 ：-h                : 必选【选项】
                    ：-n                : 必选【选项】

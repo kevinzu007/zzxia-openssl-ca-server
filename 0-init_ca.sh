@@ -5,15 +5,24 @@
 # Test On: CentOS 7
 #############################################################################
 
+# sh
+SH_NAME=${0##*/}
+SH_PATH=$( cd "$( dirname "$0" )" && pwd )
+cd ${SH_PATH}
+
+# 本地env
+GAN_WHAT_FUCK='CA服务器初始化'
+NEED_PRIVILEGES='ADMIN'
+
 
 F_HELP()
 {
     echo "
     用途：初始化CA服务器环境
     特征码：
-        CA证书
+        ${GAN_WHAT_FUCK:-'未命名'}
     权限要求：
-        admin
+        ${NEED_PRIVILEGES:-'未指定'}
     依赖：
     注意：清空CA相关数据及颁发的证书及配置文件
     用法：

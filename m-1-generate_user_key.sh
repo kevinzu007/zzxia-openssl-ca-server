@@ -12,6 +12,10 @@ SH_NAME=${0##*/}
 SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd ${SH_PATH}
 
+# 本地env
+GAN_WHAT_FUCK='生成用户密钥'
+NEED_PRIVILEGES='ADMIN'
+
 
 
 F_HELP()
@@ -19,15 +23,15 @@ F_HELP()
     echo "
     用途：用于生成用户秘钥
     特征码：
-        CA证书
+        ${GAN_WHAT_FUCK:-'未命名'}
     权限要求：
-        admin
+        ${NEED_PRIVILEGES:-'未指定'}
     依赖：
         ./function.sh
     注意：
     用法:
         $0  -h|--help
-        $0  -n|--name <证书相关名称>  [-p|--privatekey-bits <私钥长度>]  [-q|--quiet]
+        $0  {-n|--name <证书相关名称>}  [-p|--privatekey-bits <私钥长度>]  [-q|--quiet]
     参数规范：
         无包围符号 ：-h                : 必选【选项】
                    ：-n                : 必选【选项】
