@@ -103,7 +103,7 @@ F_CSR_TO_CNF()
     localityName_default="$L"
     organizationName_default0="$O"
     organizationalUnitName_default="$OU"
-    emailAddress_default="echo $CN | cut -d '/' -f 2 | cut -d '=' -f 2"
+    emailAddress_default=$(echo "$CN" | cut -d '/' -f 2 | cut -d '=' -f 2)
     commonName_default="`echo $CN | cut -d '/' -f 1`"
     #
     # 备用名称信息
@@ -227,7 +227,7 @@ do
             CERT_BITS=$2
             shift 2
             if [[ ! ${CERT_BITS} =~ ^[1-9]+[0-9]*$ ]]; then
-                echo -e "\n峰哥说：参数值【-b|--bits】必须为正整数！\n"
+                echo -e "\n峰哥说：参数值【-c|--cert-bits】必须为正整数！\n"
                 exit 1
             fi
             let X=${CERT_BITS}%1024

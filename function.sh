@@ -5,6 +5,9 @@
 # Test On: CentOS 7
 #############################################################################
 
+# 获取脚本所在目录
+SH_PATH=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+
 
 # 生成openssl.cnf文件
 # 使用前需要一些变量
@@ -62,7 +65,7 @@ default_ca = CA_default        # The default ca section
 
 ####################################################################
 [ CA_default ]
-dir     = $PWD      # Where everything is kept
+dir     = ${SH_PATH}      # Where everything is kept
 
 # 颁发的证书路径
 new_certs_dir   = \$dir/newcerts    # default place for new certs.

@@ -64,6 +64,7 @@ F_GEN_KEY()
 {
     # key
     openssl genrsa -out ${SH_PATH}/from_user_csr/${NAME}.key  ${PRIVATEKEY_BITS}
+    chmod 600 ${SH_PATH}/from_user_csr/${NAME}.key
     echo -e "\n私钥文件路径："
     echo "    私钥：【${SH_PATH}/from_user_csr/${NAME}.key】"
 }
@@ -94,7 +95,7 @@ do
             PRIVATEKEY_BITS=$2
             shift 2
             if [[ ! ${PRIVATEKEY_BITS} =~ ^[1-9]+[0-9]*$ ]]; then
-                echo -e "\n峰哥说：参数值【-b|--bits】必须为正整数！\n"
+                echo -e "\n峰哥说：参数值【-p|--privatekey-bits】必须为正整数！\n"
                 exit 1
             fi
             let X=${PRIVATEKEY_BITS}%1024

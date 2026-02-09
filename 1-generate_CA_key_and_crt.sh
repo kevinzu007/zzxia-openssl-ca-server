@@ -118,6 +118,7 @@ if [ -f private/ca.pem.key ]; then
     echo "    【${SH_PATH}/private/ca.pem.key】"
 else
     openssl genrsa -out private/ca.pem.key ${PRIVATEKEY_BITS}
+    chmod 600 private/ca.pem.key
 fi
 
 

@@ -78,6 +78,7 @@ F_GEN_KEY_AND_CRT()
         echo -e "\n注意：私钥【${SH_PATH}/from_user_csr/${NAME}.key】已存在，将使用此私钥\n"
     else
         openssl genrsa -out ${SH_PATH}/from_user_csr/${NAME}.key  ${PRIVATEKEY_BITS}
+        chmod 600 ${SH_PATH}/from_user_csr/${NAME}.key
     fi
     
     # csr
@@ -155,7 +156,7 @@ do
             shift 2
             #
             if [[ ! ${PRIVATEKEY_BITS} =~ ^[1-9]+[0-9]*$ ]]; then
-                echo -e "\n峰哥说：参数值【-b|--bits】必须为正整数！\n"
+                echo -e "\n峰哥说：参数值【-p|--privatekey-bits】必须为正整数！\n"
                 exit 1
             fi
             #
@@ -170,13 +171,13 @@ do
             shift 2
             #
             if [[ ! ${CERT_BITS} =~ ^[1-9]+[0-9]*$ ]]; then
-                echo -e "\n峰哥说：参数值【-b|--bits】必须为正整数！\n"
+                echo -e "\n峰哥说：参数值【-c|--cert-bits】必须为正整数！\n"
                 exit 1
             fi
             #
             let X=${CERT_BITS}%1024
             if [ $X -ne 0 ]; then
-                echo -e "\n峰哥说：私钥长度必须是1024的整数倍！\n"
+                echo -e "\n峰哥说：证书长度必须是1024的整数倍！\n"
                 exit 1
             fi
             ;;
