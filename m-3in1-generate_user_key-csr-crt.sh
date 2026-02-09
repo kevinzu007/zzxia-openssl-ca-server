@@ -38,7 +38,7 @@ F_HELP()
     注意：
     用法:
         $0  -h|--help
-        $0  {-n|--name <证书相关名称>}  [-p|--privatekey-bits <私钥长度>]  [-c|--cert-bits <证书长度>]  [-d|--days <证书有效天数>]  [-q|--quiet]
+        $0  {-n|--name <证书相关名称>}  [{-p|--privatekey-bits <私钥长度>}]  [{-c|--cert-bits <证书长度>}]  [{-d|--days <证书有效天数>}]  [-q|--quiet]
     参数规范：
         无包围符号 ：-h                : 必选【选项】
                    ：-n                : 必选【选项】
