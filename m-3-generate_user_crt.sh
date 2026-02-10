@@ -73,6 +73,68 @@ F_HELP()
 
 
 
+# 将CSR中的keyUsage英文描述转换为OpenSSL配置格式
+F_CONVERT_KEY_USAGE()
+{
+    local USAGE_DESC="$1"
+    local RESULT=""
+    OLD_IFS="$IFS"
+    IFS=","
+    for USAGE in $USAGE_DESC; do
+        # 去除前后空格
+        USAGE=$(echo "$USAGE" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+        # 数据来源：【key_usage.md】中的【类别=normal】
+        case "$USAGE" in
+            "Digital Signature")    RESULT="${RESULT}digitalSignature," ;;
+            "Non Repudiation")      RESULT="${RESULT}nonRepudiation," ;;
+            "Key Encipherment")     RESULT="${RESULT}keyEncipherment," ;;
+            "Data Encipherment")    RESULT="${RESULT}dataEncipherment," ;;
+            "Key Agreement")        RESULT="${RESULT}keyAgreement," ;;
+            "Key CertSign")        RESULT="${RESULT}keyCertSign," ;;
+            "Crl Sign")           RESULT="${RESULT}cRLSign," ;;
+            "Encipher Only")       RESULT="${RESULT}encipherOnly," ;;
+            "Decipher Only")       RESULT="${RESULT}decipherOnly," ;;
+        esac
+    done
+    IFS="$OLD_IFS"
+    # 去除末尾逗号
+    echo "$RESULT" | sed 's/,$//'
+}
+
+
+# 将CSR中的extendedKeyUsage英文描述转换为OpenSSL配置格式
+F_CONVERT_EXTENDED_KEY_USAGE()
+{
+    local USAGE_DESC="$1"
+    local RESULT=""
+    OLD_IFS="$IFS"
+    IFS=","
+    for USAGE in $USAGE_DESC; do
+        # 去除前后空格
+        USAGE=$(echo "$USAGE" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+        # 数据来源：【key_usage.md】中的【类别=extended】
+        case "$USAGE" in
+            "TLS Web Server Authentication")          RESULT="${RESULT}serverAuth," ;;
+            "TLS Web Client Authentication")          RESULT="${RESULT}clientAuth," ;;
+            "Code Signing")                         RESULT="${RESULT}codeSigning," ;;
+            "E-mail Protection")                    RESULT="${RESULT}emailProtection," ;;
+            "Trusted Timestamping")                 RESULT="${RESULT}timeStamping," ;;
+            "Microsoft Individual Code Signing")       RESULT="${RESULT}msCodeInd," ;;
+            "Microsoft Commercial Code Signing")       RESULT="${RESULT}msCodeCom," ;;
+            "Microsoft Trust List Signing")           RESULT="${RESULT}msCTLSign," ;;
+            "Microsoft Server Gated Crypto")          RESULT="${RESULT}msSGC," ;;
+            "Microsoft Encrypted File System")         RESULT="${RESULT}msEFS," ;;
+            "Netscape Server Gated Crypto")          RESULT="${RESULT}nsSGC," ;;
+        esac
+    done
+    IFS="$OLD_IFS"
+    # 去除末尾逗号
+    echo "$RESULT" | sed 's/,$//'
+}
+
+
+# 将-f|--csr-file指定的外来CSR文件转换为openssl.cnf
+# （默认使用本系统自动生成的）
 F_CSR_TO_CNF()
 {
     F_CSR_FILE=$1
@@ -82,7 +144,7 @@ F_CSR_TO_CNF()
     export CERT_BITS=${CERT_BITS:-2048}          #--- 证书长度
     export CERT_DAYS=${CERT_DAYS:-365}           #--- 证书有效期
     #
-    # 主要信息
+    # 获取主要信息
     CSR_SUBJECT=$( cat /tmp/${SH_NAME}-${NAME}.csr.text  \
         | grep  'Subject: C' | sed 's/^ *//'  \
         | awk -F ':' '{print $2}'  \
@@ -106,9 +168,9 @@ F_CSR_TO_CNF()
     emailAddress_default=$(echo "$CN" | cut -d '/' -f 2 | cut -d '=' -f 2)
     commonName_default="`echo $CN | cut -d '/' -f 1`"
     #
-    # 备用名称信息
+    # 获取备用名称信息
     CSR_SUBJECT_A=$( cat /tmp/${SH_NAME}-${NAME}.csr.text  \
-        | awk '/X509v3 Subject Alternative Name/{getline; print}'  \
+        | awk '/X509v3 Subject Alternative Name:/{getline; print}'  \
         | sed 's/^ *//'  \
         | sed 's/,//g' )
     # env
@@ -121,9 +183,10 @@ F_CSR_TO_CNF()
         let i=$i+1
     done
     #
+    # 用获取的信息生成openssl.cnf
     F_ECHO_OPENSSL_CNF > "${SH_PATH}/my_conf/openssl.cnf--${NAME}"
     #
-    # sed 追加
+    # 获取书类型（是否为CA证书），并修改openssl.cnf
     # 基本约束：是否为CA证书请求
     CSR_BASIC=$( cat /tmp/${SH_NAME}-${NAME}.csr.text  \
         | awk '/X509v3 Basic Constraints:/{getline; print}'  \
@@ -133,27 +196,28 @@ F_CSR_TO_CNF()
         sed -i 's/CA:FALSE/CA:TRUE/'  ${SH_PATH}/my_conf/openssl.cnf--${NAME}
     fi
     #
-    # 秘钥用法
+    # 获取秘钥用法，并修改openssl.cnf
     CSR_KEY_USAGES=$( cat /tmp/${SH_NAME}-${NAME}.csr.text  \
         | awk '/X509v3 Key Usage:/{getline; print}'  \
         | sed 's/^ *//' )
-    if [ $? -ne 0 ]; then
-        echo -e "\n峰哥说：秘钥用法为空，不可能的，请检查你的证书请求文件\n"
-        return 1
-    else
-        # 查询【key_usage.md】获取参数值，然后sed添加到配置文件${SH_PATH}/my_conf/openssl.cnf--${NAME}中
-        #sed -i "/^# keyUsage = 用逗号分隔/a\keyUsage = ${MY_KEY_USAGE_S}"  ${SH_PATH}/my_conf/openssl.cnf--${NAME}
-        echo -n "\n峰哥说：这个功能还没做完，主要觉得大概率没人用这个功能，你要你搞下吧 :-)\n"
+    if [ -n "${CSR_KEY_USAGES}" ]; then
+        # 转换为OpenSSL配置格式
+        MY_KEY_USAGE_S=$(F_CONVERT_KEY_USAGE "${CSR_KEY_USAGES}")
+        if [ -n "${MY_KEY_USAGE_S}" ]; then
+            sed -i "/^# keyUsage = 用逗号分隔/a\keyUsage = ${MY_KEY_USAGE_S}"  ${SH_PATH}/my_conf/openssl.cnf--${NAME}
+        fi
     fi
     #
-    # 增强秘钥用法
+    # 获取增强秘钥用法，并修改openssl.cnf
     CSR_EXTENDED_KEY_USAGES=$( cat /tmp/${SH_NAME}-${NAME}.csr.text  \
-        | awk '/X509v3 Key Usage:/{getline; print}'  \
+        | awk '/X509v3 Extended Key Usage:/{getline; print}'  \
         | sed 's/^ *//' )
-    if [ $? -eq 0 ]; then
-        # 查询【key_usage.md】获取参数值，然后sed添加到配置文件${SH_PATH}/my_conf/openssl.cnf--${NAME}中
-        #sed -i "/^# extendedKeyUsage = 用逗号分隔/a\extendedKeyUsage = ${MY_EXTENDED_KEY_USAGE_S}"  ${SH_PATH}/my_conf/openssl.cnf--${NAME}
-        echo -n "\n峰哥说：这个功能还没做完，主要觉得大概率没人用这个功能，你要你搞下吧 :-)\n"
+    if [ -n "${CSR_EXTENDED_KEY_USAGES}" ]; then
+        # 转换为OpenSSL配置格式
+        MY_EXTENDED_KEY_USAGE_S=$(F_CONVERT_EXTENDED_KEY_USAGE "${CSR_EXTENDED_KEY_USAGES}")
+        if [ -n "${MY_EXTENDED_KEY_USAGE_S}" ]; then
+            sed -i "/^# extendedKeyUsage = 用逗号分隔/a\extendedKeyUsage = ${MY_EXTENDED_KEY_USAGE_S}"  ${SH_PATH}/my_conf/openssl.cnf--${NAME}
+        fi
     fi
     #
     echo
