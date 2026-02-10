@@ -149,7 +149,7 @@ else
     exit 1
 fi
 # 生成秘钥用法变量
-F_CERT_USE_FOR_VAR
+F_CERT_USE_FOR_VAR  "${CERT_USE_FOR}"
 if [ $? -ne 0 ]; then
     echo -e "\n峰哥说：配置文件【${SH_PATH}/my_conf/env.sh--${NAME}】中的参数【CERT_USE_FOR】设置错误，请检查\n"
     exit 1

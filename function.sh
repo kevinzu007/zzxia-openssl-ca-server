@@ -9,8 +9,70 @@
 SH_PATH=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
 
+
+# 生成证书用法变量
+# 此为一般用法，如果觉得不够，可以根据密钥用法手册【key_usage.md】增加自己想要的
+#
+# 用法：F_CERT_USE_FOR_VAR  <参数>
+F_CERT_USE_FOR_VAR()
+{
+    local f_CERT_USE_FOR=$1
+    # Do
+    case ${f_CERT_USE_FOR} in
+        1|ca)
+            export MY_KEY_USAGE_S='nonRepudiation,keyCertSign,cRLSign'
+            export MY_EXTENDED_KEY_USAGE_S=''
+            ;;
+        2|code)
+            export MY_KEY_USAGE_S='digitalSignature'
+            export MY_EXTENDED_KEY_USAGE_S='codeSigning'
+            ;;
+        3|computer)
+            export MY_KEY_USAGE_S='digitalSignature,keyAgreement'
+            export MY_EXTENDED_KEY_USAGE_S='serverAuth'
+            ;;
+        4|webserver)
+            export MY_KEY_USAGE_S='digitalSignature,nonRepudiation,keyEncipherment,dataEncipherment,keyAgreement'
+            export MY_EXTENDED_KEY_USAGE_S='serverAuth'
+            ;;
+        5|client)
+            export MY_KEY_USAGE_S='digitalSignature,nonRepudiation,keyEncipherment,dataEncipherment'
+            export MY_EXTENDED_KEY_USAGE_S='clientAuth'
+            ;;
+        6|trustlist)
+            export MY_KEY_USAGE_S='digitalSignature'
+            export MY_EXTENDED_KEY_USAGE_S='msCTLSign'
+            ;;
+        7|timestamp)
+            export MY_KEY_USAGE_S='digitalSignature,nonRepudiation,keyEncipherment,dataEncipherment'
+            export MY_EXTENDED_KEY_USAGE_S='timeStamping'
+            ;;
+        8|ipsec)
+            export MY_KEY_USAGE_S='digitalSignature,nonRepudiation,keyEncipherment,dataEncipherment'
+            export MY_EXTENDED_KEY_USAGE_S='1.3.6.1.5.5.8.2.2'
+            ;;
+        9|email)
+            export MY_KEY_USAGE_S='digitalSignature,nonRepudiation,keyEncipherment,dataEncipherment'
+            export MY_EXTENDED_KEY_USAGE_S='emailProtection'
+            ;;
+        10|smartcard)
+            export MY_KEY_USAGE_S='digitalSignature,keyAgreement,decipherOnly'
+            export MY_EXTENDED_KEY_USAGE_S='1.3.6.1.4.1.311.10.3.11,msEFS,1.3.6.1.4.1.311.20.2.2'
+            ;;
+        *)
+            #echo -e "\n峰哥说：配置文件【/my_conf/env.sh--你的证书名称】中的参数【CERT_USE_FOR】设置错误，请检查\n"
+            return 1
+            ;;
+    esac
+    #
+    return 0
+}
+
+
+
 # 生成openssl.cnf文件
 # 使用前需要一些变量
+#
 F_ECHO_OPENSSL_CNF()
 {
     echo "
@@ -29,8 +91,8 @@ RANDFILE        = \$ENV::HOME/.rnd
 oid_section     = new_oids
 
 # 当【openssl x509】实用程序和【-extfile】选项一起用时，在此处命名要使用的 X.509v3 扩展section名称。（也可以直接在命令行带上参数选项【-extensions section名称】吧）
-# To use this configuration file with the "-extfile" option of the
-# "openssl x509" utility, name here the section containing the
+# To use this configuration file with the '-extfile' option of the
+# 'openssl x509' utility, name here the section containing the
 # X.509v3 extensions to use:
 #extensions =
 # 或者使用【在主要[= default]section中仅包含 X.509v3 扩展】的配置文件
@@ -41,7 +103,7 @@ oid_section     = new_oids
 
 ####################################################################
 [ new_oids ]
-# 我们可以在这里添加新的OID供"ca"，"req"和"ts"使用
+# 我们可以在这里添加新的OID供ca，req和ts使用
 # We can add new OIDs in here for use by 'ca', 'req' and 'ts'.
 # Add a simple OID like this:
 #testoid1 = 1.2.3.4
@@ -90,7 +152,7 @@ RANDFILE    = \$dir/private/.rand       # private random number file
 x509_extensions = usr_cert      # The extentions to add to the cert
 
 # 传统格式需要注释掉以下两行
-# Comment out the following two lines for the "traditional"
+# Comment out the following two lines for the 'traditional'
 # (and highly broken) format.
 name_opt = ca_default        # Subject Name options
 cert_opt = ca_default        # Certificate field options
@@ -125,7 +187,7 @@ policy = policy_match     # 调用CA策略段：policy_match
 # CA策略
 # For the CA policy
 [ policy_match ]
-# 如果值为"match"，则客户端证书请求时，相应信息必须和CA证书保持一致；反之如果为"optional"，则不用
+# 如果值为'match'，则客户端证书请求时，相应信息必须和CA证书保持一致；反之如果为'optional'，则不用
 #countryName         = match
 countryName         = optional
 stateOrProvinceName = optional
@@ -291,7 +353,7 @@ unstructuredName        = An optional company name
 
 # 显示在Netscape浏览器上的
 # This will be displayed in Netscape's comment listbox.
-nsComment = "OpenSSL Generated Certificate"
+nsComment = OpenSSL Generated Certificate
 
 
 # 如果无害，则建议包含在所有证书中
@@ -391,7 +453,7 @@ subjectAltName = @alt_names
 #   email.1 = copy         #--- 代表从用户信息复制
 #   email.2 = xx@yy.zz
 #
-`echo "$alt_names"`
+$(echo "$alt_names")
 
 
 
@@ -443,7 +505,7 @@ keyUsage = nonRepudiation,keyCertSign,cRLSign
 # DER 十六进制编码扩展（供高手小心使用）
 # DER hex encoding of an extension: beware experts only!
 #obj = DER:02:03
-# 当“obj”是标准或添加的对象，您甚至可以覆盖受支持的扩展
+# 当'obj'是标准或添加的对象，您甚至可以覆盖受支持的扩展
 # Where 'obj' is a standard or added object
 # You can even override a supported extension:
 #basicConstraints = critical,DER:30:03:01:01:FF
@@ -588,62 +650,6 @@ tsa_name        = yes   # Must the TSA name be included in the reply?
 ess_cert_id_chain   = no    # Must the ESS cert id chain be included?
                 # (optional, default: no)
     "
-}
-
-
-
-# 生成证书用法变量
-F_CERT_USE_FOR_VAR()
-{
-    # Do
-    case ${CERT_USE_FOR} in
-        1|ca)
-            export MY_KEY_USAGE_S='nonRepudiation,keyCertSign,cRLSign'
-            export MY_EXTENDED_KEY_USAGE_S=''
-            ;;
-        2|code)
-            export MY_KEY_USAGE_S='digitalSignature'
-            export MY_EXTENDED_KEY_USAGE_S='codeSigning'
-            ;;
-        3|computer)
-            export MY_KEY_USAGE_S='digitalSignature,keyAgreement'
-            export MY_EXTENDED_KEY_USAGE_S='serverAuth'
-            ;;
-        4|webserver)
-            export MY_KEY_USAGE_S='digitalSignature,nonRepudiation,keyEncipherment,dataEncipherment,keyAgreement'
-            export MY_EXTENDED_KEY_USAGE_S='serverAuth'
-            ;;
-        5|client)
-            export MY_KEY_USAGE_S='digitalSignature,nonRepudiation,keyEncipherment,dataEncipherment'
-            export MY_EXTENDED_KEY_USAGE_S='clientAuth'
-            ;;
-        6|trustlist)
-            export MY_KEY_USAGE_S='digitalSignature'
-            export MY_EXTENDED_KEY_USAGE_S='msCTLSign'
-            ;;
-        7|timestamp)
-            export MY_KEY_USAGE_S='digitalSignature,nonRepudiation,keyEncipherment,dataEncipherment'
-            export MY_EXTENDED_KEY_USAGE_S='timeStamping'
-            ;;
-        8|ipsec)
-            export MY_KEY_USAGE_S='digitalSignature,nonRepudiation,keyEncipherment,dataEncipherment'
-            export MY_EXTENDED_KEY_USAGE_S='1.3.6.1.5.5.8.2.2'
-            ;;
-        9|email)
-            export MY_KEY_USAGE_S='digitalSignature,nonRepudiation,keyEncipherment,dataEncipherment'
-            export MY_EXTENDED_KEY_USAGE_S='emailProtection'
-            ;;
-        10|smartcard)
-            export MY_KEY_USAGE_S='digitalSignature,keyAgreement,decipherOnly'
-            export MY_EXTENDED_KEY_USAGE_S='1.3.6.1.4.1.311.10.3.11,msEFS,1.3.6.1.4.1.311.20.2.2'
-            ;;
-        *)
-            #echo -e "\n峰哥说：配置文件【/my_conf/env.sh--你的证书名称】中的参数【CERT_USE_FOR】设置错误，请检查\n"
-            return 1
-            ;;
-    esac
-    #
-    return 0
 }
 
 
