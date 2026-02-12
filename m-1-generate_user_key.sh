@@ -10,11 +10,17 @@
 # sh
 SH_NAME=${0##*/}
 SH_PATH=$( cd "$( dirname "$0" )" && pwd )
-cd ${SH_PATH}
+cd "${SH_PATH}"
 
 # 本地env
 GAN_WHAT_FUCK='生成用户密钥'
 NEED_PRIVILEGES='ADMIN'
+
+# 检查openssl是否存在
+if ! command -v openssl &> /dev/null; then
+    echo "错误：openssl未安装，请先安装openssl"
+    exit 1
+fi
 
 
 
@@ -63,8 +69,8 @@ F_HELP()
 F_GEN_KEY()
 {
     # key
-    openssl genrsa -out ${SH_PATH}/from_user_csr/${NAME}.key  ${PRIVATEKEY_BITS}
-    chmod 600 ${SH_PATH}/from_user_csr/${NAME}.key
+    openssl genrsa -out "${SH_PATH}/from_user_csr/${NAME}.key"  ${PRIVATEKEY_BITS}
+    chmod 600 "${SH_PATH}/from_user_csr/${NAME}.key"
     echo -e "\n私钥文件路径："
     echo "    私钥：【${SH_PATH}/from_user_csr/${NAME}.key】"
 }
@@ -133,7 +139,7 @@ fi
 
 # env
 if [ -f "${SH_PATH}/my_conf/env.sh--${NAME}" ]; then
-    . ${SH_PATH}/my_conf/env.sh--${NAME}
+    . "${SH_PATH}/my_conf/env.sh--${NAME}"
     #. ./function.sh
 else
     echo -e "\n峰哥说：环境参数文件【${SH_PATH}/my_conf/env.sh--${NAME}】未找到，请基于【${SH_PATH}/my_conf/env.sh--model】创建！\n"

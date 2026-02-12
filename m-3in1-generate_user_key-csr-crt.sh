@@ -10,17 +10,11 @@
 # sh
 SH_NAME=${0##*/}
 SH_PATH=$( cd "$( dirname "$0" )" && pwd )
-cd ${SH_PATH}
+cd "${SH_PATH}"
 
 # 本地env
 GAN_WHAT_FUCK='生成用户密钥与证书'
 NEED_PRIVILEGES='ADMIN'
-
-# 检查openssl是否存在
-if ! command -v openssl &> /dev/null; then
-    echo "错误：openssl未安装，请先安装openssl"
-    exit 1
-fi
 
 
 
@@ -77,14 +71,14 @@ F_GEN_KEY_AND_CRT()
     if [ -f "${SH_PATH}/from_user_csr/${NAME}.key" ]; then
         echo -e "\n注意：私钥【${SH_PATH}/from_user_csr/${NAME}.key】已存在，将使用此私钥\n"
     else
-        openssl genrsa -out ${SH_PATH}/from_user_csr/${NAME}.key  ${PRIVATEKEY_BITS}
-        chmod 600 ${SH_PATH}/from_user_csr/${NAME}.key
+        openssl genrsa -out "${SH_PATH}/from_user_csr/${NAME}.key"  ${PRIVATEKEY_BITS}
+        chmod 600 "${SH_PATH}/from_user_csr/${NAME}.key"
     fi
     
     # csr
-    openssl req -new  -key ${SH_PATH}/from_user_csr/${NAME}.key  \
-        -out ${SH_PATH}/from_user_csr/${NAME}.csr  \
-        -config  ${SH_PATH}/my_conf/openssl.cnf--${NAME}  \
+    openssl req -new  -key "${SH_PATH}/from_user_csr/${NAME}.key"  \
+        -out "${SH_PATH}/from_user_csr/${NAME}.csr"  \
+        -config  "${SH_PATH}/my_conf/openssl.cnf--${NAME}"  \
         ${QUIET_OPTION} \
         2>&1  |  tee /tmp/${SH_NAME}-${NAME}-csr.log
     
@@ -97,13 +91,13 @@ F_GEN_KEY_AND_CRT()
     # 查看csr信息
     echo -e "\n证书请求信息如下："
     echo '------------------------------------------------------------'
-    openssl req  -in ${SH_PATH}/from_user_csr/${NAME}.csr  -noout -text
+    openssl req  -in "${SH_PATH}/from_user_csr/${NAME}.csr"  -noout -text
     echo '------------------------------------------------------------'
     
     # crt
-    openssl ca  -in ${SH_PATH}/from_user_csr/${NAME}.csr  \
-        -out ${SH_PATH}/to_user_crt/${NAME}.crt  \
-        -config ${SH_PATH}/my_conf/openssl.cnf--${NAME}  \
+    openssl ca  -in "${SH_PATH}/from_user_csr/${NAME}.csr"  \
+        -out "${SH_PATH}/to_user_crt/${NAME}.crt"  \
+        -config "${SH_PATH}/my_conf/openssl.cnf--${NAME}"  \
         -extensions v3_req  \
         ${QUIET_OPTION} \
         2>&1  |  tee /tmp/${SH_NAME}-${NAME}-crt.log
@@ -122,7 +116,7 @@ F_GEN_KEY_AND_CRT()
     # 查看crt信息
     echo -e "\n证书签名详情如下："
     echo '------------------------------------------------------------'
-    openssl x509  -in ${SH_PATH}/to_user_crt/${NAME}.crt  -noout -text
+    openssl x509  -in "${SH_PATH}/to_user_crt/${NAME}.crt"  -noout -text
     echo '------------------------------------------------------------'
     echo -e "\n秘钥、证书文件路径："
     echo "    私钥：【${SH_PATH}/from_user_csr/${NAME}.key】"
@@ -218,8 +212,9 @@ fi
 
 # env
 if [ -f "${SH_PATH}/my_conf/env.sh--${NAME}" ]; then
-    . ${SH_PATH}/my_conf/env.sh--${NAME}
+    . "${SH_PATH}/my_conf/env.sh--${NAME}"
     . ./function.sh
+    F_CHECK_OPENSSL
 else
     echo -e "\n峰哥说：环境参数文件【${SH_PATH}/my_conf/env.sh--${NAME}】未找到，请基于【${SH_PATH}/my_conf/env.sh--model】创建！\n"
     exit 1
@@ -241,16 +236,16 @@ fi
 
 
 # cnf
-F_ECHO_OPENSSL_CNF > ${SH_PATH}/my_conf/openssl.cnf--${NAME}
+F_ECHO_OPENSSL_CNF > "${SH_PATH}/my_conf/openssl.cnf--${NAME}"
 # keyUsage
-sed -i "/^# keyUsage = 用逗号分隔/a\keyUsage = ${MY_KEY_USAGE_S}"  ${SH_PATH}/my_conf/openssl.cnf--${NAME}
+sed -i "/^# keyUsage = 用逗号分隔/a\keyUsage = ${MY_KEY_USAGE_S}"  "${SH_PATH}/my_conf/openssl.cnf--${NAME}"
 # extendedKeyUsage
 if [ -n "${MY_EXTENDED_KEY_USAGE_S}" ]; then
-    sed -i "/^# extendedKeyUsage = 用逗号分隔/a\extendedKeyUsage = ${MY_EXTENDED_KEY_USAGE_S}"  ${SH_PATH}/my_conf/openssl.cnf--${NAME}
+    sed -i "/^# extendedKeyUsage = 用逗号分隔/a\extendedKeyUsage = ${MY_EXTENDED_KEY_USAGE_S}"  "${SH_PATH}/my_conf/openssl.cnf--${NAME}"
 fi
 # CA:TRUE
 if [ "${CERT_USE_FOR}" = '1' -o "${CERT_USE_FOR}" = 'ca' ]; then
-    sed -i 's/CA:FALSE/CA:TRUE/'  ${SH_PATH}/my_conf/openssl.cnf--${NAME}
+    sed -i 's/CA:FALSE/CA:TRUE/'  "${SH_PATH}/my_conf/openssl.cnf--${NAME}"
 fi
 
 

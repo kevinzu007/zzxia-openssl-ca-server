@@ -10,7 +10,7 @@
 # sh
 SH_NAME=${0##*/}
 SH_PATH=$( cd "$( dirname "$0" )" && pwd )
-cd ${SH_PATH}
+cd "${SH_PATH}"
 
 # 本地env
 GAN_WHAT_FUCK='生成CA密钥和证书'
@@ -75,8 +75,9 @@ esac
 NAME='CA'
 #
 if [ -f "${SH_PATH}/my_conf/env.sh--${NAME}" ]; then
-    . ${SH_PATH}/my_conf/env.sh--${NAME}
+    . "${SH_PATH}/my_conf/env.sh--${NAME}"
     . ./function.sh
+    F_CHECK_OPENSSL
 else
     echo -e "\n峰哥说：环境参数文件【${SH_PATH}/my_conf/env.sh--${NAME}】未找到，请基于【${SH_PATH}/my_conf/env.sh--model】创建！\n"
     exit 1
@@ -90,16 +91,16 @@ fi
 
 
 # cnf
-F_ECHO_OPENSSL_CNF > ${SH_PATH}/my_conf/openssl.cnf--${NAME}
+F_ECHO_OPENSSL_CNF > "${SH_PATH}/my_conf/openssl.cnf--${NAME}"
 # keyUsage
-sed -i "/^# keyUsage = 用逗号分隔/a\keyUsage = ${MY_KEY_USAGE_S}"  ${SH_PATH}/my_conf/openssl.cnf--${NAME}
+sed -i "/^# keyUsage = 用逗号分隔/a\keyUsage = ${MY_KEY_USAGE_S}"  "${SH_PATH}/my_conf/openssl.cnf--${NAME}"
 # extendedKeyUsage
 if [ -n "${MY_EXTENDED_KEY_USAGE_S}" ]; then
-    sed -i "/^# extendedKeyUsage = 用逗号分隔/a\extendedKeyUsage = ${MY_EXTENDED_KEY_USAGE_S}"  ${SH_PATH}/my_conf/openssl.cnf--${NAME}
+    sed -i "/^# extendedKeyUsage = 用逗号分隔/a\extendedKeyUsage = ${MY_EXTENDED_KEY_USAGE_S}"  "${SH_PATH}/my_conf/openssl.cnf--${NAME}"
 fi
 # CA:TRUE
 if [ "${CERT_USE_FOR}" = '1' -o "${CERT_USE_FOR}" = 'ca' ]; then
-    sed -i 's/CA:FALSE/CA:TRUE/'  ${SH_PATH}/my_conf/openssl.cnf--${NAME}
+    sed -i 's/CA:FALSE/CA:TRUE/'  "${SH_PATH}/my_conf/openssl.cnf--${NAME}"
 fi
 
 
@@ -126,7 +127,12 @@ fi
 openssl req -new  \
     -key private/ca.pem.key  \
     -out ca.pem.csr  \
-    -config  ${SH_PATH}/my_conf/openssl.cnf--${NAME}
+    -config  "${SH_PATH}/my_conf/openssl.cnf--${NAME}"
+
+if [ ! -f ca.pem.csr ]; then
+    echo -e "\n峰哥说：CA证书请求文件生成失败，请检查错误信息\n"
+    exit 1
+fi
 
 
 # 证书
@@ -138,7 +144,7 @@ else
         -req  -in ca.pem.csr  \
         -signkey private/ca.pem.key  \
         -out ca.pem.crt  \
-        -extfile ${SH_PATH}/my_conf/openssl.cnf--${NAME}  \
+        -extfile "${SH_PATH}/my_conf/openssl.cnf--${NAME}"  \
         -extensions v3_req
     echo "OK，CA私钥与证书已经生成："
     echo "    私钥：【${SH_PATH}/private/ca.pem.key】"

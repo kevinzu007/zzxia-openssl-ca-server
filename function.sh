@@ -10,6 +10,17 @@ SH_PATH=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
 
 
+# 检查openssl是否存在
+F_CHECK_OPENSSL()
+{
+    if ! command -v openssl &> /dev/null; then
+        echo "错误：openssl未安装，请先安装openssl"
+        exit 1
+    fi
+}
+
+
+
 # 生成证书用法变量
 # 此为一般用法，如果觉得不够，可以根据密钥用法手册【key_usage.md】增加自己想要的
 #

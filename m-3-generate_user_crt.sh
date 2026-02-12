@@ -10,17 +10,11 @@
 # sh
 SH_NAME=${0##*/}
 SH_PATH=$( cd "$( dirname "$0" )" && pwd )
-cd ${SH_PATH}
+cd "${SH_PATH}"
 
 # 本地env
 GAN_WHAT_FUCK='颁发或更新用户证书'
 NEED_PRIVILEGES='ADMIN'
-
-# 检查openssl是否存在
-if ! command -v openssl &> /dev/null; then
-    echo "错误：openssl未安装，请先安装openssl"
-    exit 1
-fi
 
 
 
@@ -138,7 +132,7 @@ F_CONVERT_EXTENDED_KEY_USAGE()
 F_CSR_TO_CNF()
 {
     F_CSR_FILE=$1
-    openssl req  -in ${F_CSR_FILE}  -noout -text  >  /tmp/${SH_NAME}-${NAME}.csr.text
+    openssl req  -in "${F_CSR_FILE}"  -noout -text  >  /tmp/${SH_NAME}-${NAME}.csr.text
     #
     # 证书
     export CERT_BITS=${CERT_BITS:-2048}          #--- 证书长度
@@ -193,7 +187,7 @@ F_CSR_TO_CNF()
         | sed 's/^ *//'  \
         | sed 's/,//g' )
     if [ "${CSR_BASIC}" = 'CA:TRUE' ]; then
-        sed -i 's/CA:FALSE/CA:TRUE/'  ${SH_PATH}/my_conf/openssl.cnf--${NAME}
+        sed -i 's/CA:FALSE/CA:TRUE/'  "${SH_PATH}/my_conf/openssl.cnf--${NAME}"
     fi
     #
     # 获取秘钥用法，并修改openssl.cnf
@@ -204,7 +198,7 @@ F_CSR_TO_CNF()
         # 转换为OpenSSL配置格式
         MY_KEY_USAGE_S=$(F_CONVERT_KEY_USAGE "${CSR_KEY_USAGES}")
         if [ -n "${MY_KEY_USAGE_S}" ]; then
-            sed -i "/^# keyUsage = 用逗号分隔/a\keyUsage = ${MY_KEY_USAGE_S}"  ${SH_PATH}/my_conf/openssl.cnf--${NAME}
+            sed -i "/^# keyUsage = 用逗号分隔/a\keyUsage = ${MY_KEY_USAGE_S}"  "${SH_PATH}/my_conf/openssl.cnf--${NAME}"
         fi
     fi
     #
@@ -216,7 +210,7 @@ F_CSR_TO_CNF()
         # 转换为OpenSSL配置格式
         MY_EXTENDED_KEY_USAGE_S=$(F_CONVERT_EXTENDED_KEY_USAGE "${CSR_EXTENDED_KEY_USAGES}")
         if [ -n "${MY_EXTENDED_KEY_USAGE_S}" ]; then
-            sed -i "/^# extendedKeyUsage = 用逗号分隔/a\extendedKeyUsage = ${MY_EXTENDED_KEY_USAGE_S}"  ${SH_PATH}/my_conf/openssl.cnf--${NAME}
+            sed -i "/^# extendedKeyUsage = 用逗号分隔/a\extendedKeyUsage = ${MY_EXTENDED_KEY_USAGE_S}"  "${SH_PATH}/my_conf/openssl.cnf--${NAME}"
         fi
     fi
     #
@@ -240,10 +234,10 @@ F_GEN_CRT()
     # crt
     # 注意：签名主要信息从csr文件获取，而备用名称需要从openssl.cnf文件里的[alt_name]中获取
     #       CA信息从从openssl.cnf文件中获取，【-extensions v3_req】是必须项
-    openssl ca  -in ${F_CSR_FILE}  \
-        -out ${SH_PATH}/to_user_crt/${NAME}.crt  \
+    openssl ca  -in "${F_CSR_FILE}"  \
+        -out "${SH_PATH}/to_user_crt/${NAME}.crt"  \
         -extensions v3_req  \
-        -config ${SH_PATH}/my_conf/openssl.cnf--${NAME}  \
+        -config "${SH_PATH}/my_conf/openssl.cnf--${NAME}"  \
         ${QUIET_OPTION} \
         2>&1  |  tee /tmp/${SH_NAME}-${NAME}-crt.log
     
@@ -260,7 +254,7 @@ F_GEN_CRT()
     
     echo -e "\n证书签名详情如下："
     echo '------------------------------------------------------------'
-    openssl x509  -in ${SH_PATH}/to_user_crt/${NAME}.crt  -noout -text
+    openssl x509  -in "${SH_PATH}/to_user_crt/${NAME}.crt"  -noout -text
     echo '------------------------------------------------------------'
     echo -e "\n用户证书文件路径："
     echo "    证书：【${SH_PATH}/to_user_crt/${NAME}.crt】"
@@ -341,8 +335,9 @@ fi
 
 # env
 if [ -f "${SH_PATH}/my_conf/env.sh--${NAME}" ]; then
-    . ${SH_PATH}/my_conf/env.sh--${NAME}     #--- 仅使用 $CERT_BITS、$CERT_DAYS 变量，其他变量会被csr中的值覆盖
+    . "${SH_PATH}/my_conf/env.sh--${NAME}"     #--- 仅使用 $CERT_BITS、$CERT_DAYS 变量，其他变量会被csr中的值覆盖
     . ./function.sh
+    F_CHECK_OPENSSL
 else
     echo -e "\n峰哥说：环境参数文件【${SH_PATH}/my_conf/env.sh--${NAME}】未找到，请基于【${SH_PATH}/my_conf/env.sh--model】创建！\n"
     exit 1
@@ -375,7 +370,7 @@ else
     ## 使用用其他工具生成的csr
     # 所有证书信息直接从用户csr中获取，并生成cnf文件，用cnf文件生成证书
     # csr
-    if [ ! -f ${CSR_FILE} ]; then
+    if [ ! -f "${CSR_FILE}" ]; then
         echo -e "\n峰哥说：证书请求文件【${CSR_FILE}】未找到！\n"
         exit 1
     fi

@@ -11,3 +11,17 @@
 
 # .nfs files are created when an open file is removed but is still being accessed
 .nfs*
+
+# CA 运行时生成的文件
+private/
+newcerts/
+certs/
+crl/
+from_user_csr/
+to_user_crt/
+ca.pem.*
+ca.der.*
+index.txt*
+serial*
+crlnumber*
+my_conf/openssl.cnf--*

@@ -8,7 +8,7 @@
 # sh
 SH_NAME=${0##*/}
 SH_PATH=$( cd "$( dirname "$0" )" && pwd )
-cd ${SH_PATH}
+cd "${SH_PATH}"
 
 # 本地env
 GAN_WHAT_FUCK='CA服务器初始化'
