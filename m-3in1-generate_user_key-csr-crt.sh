@@ -30,7 +30,7 @@ F_HELP()
         ./function.sh
         ./my_conf/env.sh--\${NAME}      #--- 此文件须自行基于【./my_conf/env.sh--model】创建
     注意：
-    用法:
+    用法：
         $0  -h|--help
         $0  {-n|--name <证书相关名称>}  [{-p|--privatekey-bits <私钥长度>}]  [{-c|--cert-bits <证书长度>}]  [{-d|--days <证书有效天数>}]  [-q|--quiet]
     参数规范：
@@ -42,7 +42,7 @@ F_HELP()
         <>         ：<val>             : 需替换的具体值（用户必须提供）
         %%         ：%val%             : 通配符（包含匹配，如%error%匹配error_code）
         |          ：val1|val2|<valn>  : 多选一
-        {}         ：{-a <val>}        : 必须成组出现【选项+参数值】
+        {}         ：{-a <val>}        : 必须成组出现【选项+参数值】，且保持顺序
                    ：{val1 val2}       : 必须成组的【参数值组合】，且必须按顺序提供
     参数说明：
         -h|--help      此帮助

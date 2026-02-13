@@ -34,6 +34,7 @@ F_HELP()
         ${NEED_PRIVILEGES:-'未指定'}
     依赖：
         ./function.sh
+        ./my_conf/env.sh--\${NAME}      #--- 此文件须自行基于【./my_conf/env.sh--model】创建
     注意：
     用法:
         $0  -h|--help
@@ -47,7 +48,7 @@ F_HELP()
         <>         ：<val>             : 需替换的具体值（用户必须提供）
         %%         ：%val%             : 通配符（包含匹配，如%error%匹配error_code）
         |          ：val1|val2|<valn>  : 多选一
-        {}         ：{-a <val>}        : 必须成组出现【选项+参数值】
+        {}         ：{-a <val>}        : 必须成组出现【选项+参数值】，且保持顺序
                    ：{val1 val2}       : 必须成组的【参数值组合】，且必须按顺序提供
     参数说明：
         -h|--help      此帮助
@@ -58,8 +59,8 @@ F_HELP()
         -q|--quiet     静默方式运行
     示例:
         $0  -n test.com
-        $0  -p 4096  -n test.com
-        $0  -q  -n test.com
+        $0  -n test.com  -p 4096
+        $0  -n test.com  -q
     "
 }
 
