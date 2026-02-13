@@ -51,12 +51,12 @@ F_HELP()
         {}         ：{-a <val>}        : 必须成组出现【选项+参数值】，且保持顺序
                    ：{val1 val2}       : 必须成组的【参数值组合】，且必须按顺序提供
     参数说明：
-        -h|--help      此帮助
-        -n|--name      指定名称，用以确定用户证书相关名称前缀及env、cnf文件名称后缀。
+        -h|--help                           此帮助
+        -n|--name <证书相关名称>            指定名称，用以确定用户证书相关名称前缀及env、cnf文件名称后缀。
                        即：【私钥、证书请求、证书】的文件名称前缀：test.com.key、test.com.csr、test.com.crt
                            【环境变量、配置】文件名的后缀：env.sh--test.com、openssl.cnf--test.com
-        -p|--privatekey-bits  私钥长度，默认2048
-        -q|--quiet     静默方式运行
+        -p|--privatekey-bits <私钥长度>     私钥长度，默认2048
+        -q|--quiet                          静默方式运行
     示例:
         $0  -n test.com
         $0  -n test.com  -p 4096
