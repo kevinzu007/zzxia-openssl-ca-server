@@ -65,7 +65,7 @@ F_GEN_CSR()
         -out "${SH_PATH}/from_user_csr/${NAME}.csr"  \
         -config  "${SH_PATH}/my_conf/openssl.cnf--${NAME}"  \
         ${QUIET_OPTION} \
-        2>&1  | tee /tmp/${SH_NAME}-${NAME}-csr.log
+        2>&1  | tee "${TEMP_LOG}"
     
     # 检查是否成功
     if [ ! -f "${SH_PATH}/from_user_csr/${NAME}.csr" ]; then
@@ -143,6 +143,10 @@ else
     echo -e "\n峰哥说：环境参数文件【${SH_PATH}/my_conf/env.sh--${NAME}】未找到，请基于【${SH_PATH}/my_conf/env.sh--model】创建！\n"
     exit 1
 fi
+#
+TEMP_LOG=$(mktemp) || exit 1
+trap 'rm -f "${TEMP_LOG}"' EXIT
+
 # 生成秘钥用法变量
 F_CERT_USE_FOR_VAR  "${CERT_USE_FOR}"
 if [ $? -ne 0 ]; then

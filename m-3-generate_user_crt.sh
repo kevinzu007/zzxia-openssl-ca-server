@@ -132,14 +132,14 @@ F_CONVERT_EXTENDED_KEY_USAGE()
 F_CSR_TO_CNF()
 {
     F_CSR_FILE=$1
-    openssl req  -in "${F_CSR_FILE}"  -noout -text  >  /tmp/${SH_NAME}-${NAME}.csr.text
+    openssl req  -in "${F_CSR_FILE}"  -noout -text  >  "${TEMP_TEXT}"
     #
     # 证书
     export CERT_BITS=${CERT_BITS:-2048}          #--- 证书长度
     export CERT_DAYS=${CERT_DAYS:-365}           #--- 证书有效期
     #
     # 获取主要信息
-    CSR_SUBJECT=$( cat /tmp/${SH_NAME}-${NAME}.csr.text  \
+    CSR_SUBJECT=$( cat "${TEMP_TEXT}"  \
         | grep  'Subject: C' | sed 's/^ *//'  \
         | awk -F ':' '{print $2}'  \
         | sed 's/ = /=\"/g' | sed 's/,/\",/g' | sed 's/$/\"/' )
@@ -163,7 +163,7 @@ F_CSR_TO_CNF()
     commonName_default="`echo $CN | cut -d '/' -f 1`"
     #
     # 获取备用名称信息
-    CSR_SUBJECT_A=$( cat /tmp/${SH_NAME}-${NAME}.csr.text  \
+    CSR_SUBJECT_A=$( cat "${TEMP_TEXT}"  \
         | awk '/X509v3 Subject Alternative Name:/{getline; print}'  \
         | sed 's/^ *//'  \
         | sed 's/,//g' )
@@ -182,7 +182,7 @@ F_CSR_TO_CNF()
     #
     # 获取书类型（是否为CA证书），并修改openssl.cnf
     # 基本约束：是否为CA证书请求
-    CSR_BASIC=$( cat /tmp/${SH_NAME}-${NAME}.csr.text  \
+    CSR_BASIC=$( cat "${TEMP_TEXT}"  \
         | awk '/X509v3 Basic Constraints:/{getline; print}'  \
         | sed 's/^ *//'  \
         | sed 's/,//g' )
@@ -191,7 +191,7 @@ F_CSR_TO_CNF()
     fi
     #
     # 获取秘钥用法，并修改openssl.cnf
-    CSR_KEY_USAGES=$( cat /tmp/${SH_NAME}-${NAME}.csr.text  \
+    CSR_KEY_USAGES=$( cat "${TEMP_TEXT}"  \
         | awk '/X509v3 Key Usage:/{getline; print}'  \
         | sed 's/^ *//' )
     if [ -n "${CSR_KEY_USAGES}" ]; then
@@ -203,7 +203,7 @@ F_CSR_TO_CNF()
     fi
     #
     # 获取增强秘钥用法，并修改openssl.cnf
-    CSR_EXTENDED_KEY_USAGES=$( cat /tmp/${SH_NAME}-${NAME}.csr.text  \
+    CSR_EXTENDED_KEY_USAGES=$( cat "${TEMP_TEXT}"  \
         | awk '/X509v3 Extended Key Usage:/{getline; print}'  \
         | sed 's/^ *//' )
     if [ -n "${CSR_EXTENDED_KEY_USAGES}" ]; then
@@ -239,7 +239,7 @@ F_GEN_CRT()
         -extensions v3_req  \
         -config "${SH_PATH}/my_conf/openssl.cnf--${NAME}"  \
         ${QUIET_OPTION} \
-        2>&1  |  tee /tmp/${SH_NAME}-${NAME}-crt.log
+        2>&1  |  tee "${TEMP_LOG}"
     
     # 成功？
     if [ ! -f "${SH_PATH}/to_user_crt/${NAME}.crt" ]; then
@@ -248,7 +248,7 @@ F_GEN_CRT()
     fi
     
     # 检查日志中是否有成功信息
-    if ! grep -q 'Data Base Updated' /tmp/${SH_NAME}-${NAME}-crt.log; then
+    if ! grep -q 'Data Base Updated' "${TEMP_LOG}"; then
         echo -e "\n峰哥说：证书生成可能有问题，请检查日志\n"
     fi
     
@@ -342,6 +342,10 @@ else
     echo -e "\n峰哥说：环境参数文件【${SH_PATH}/my_conf/env.sh--${NAME}】未找到，请基于【${SH_PATH}/my_conf/env.sh--model】创建！\n"
     exit 1
 fi
+#
+TEMP_TEXT=$(mktemp) || exit 1
+TEMP_LOG=$(mktemp) || exit 1
+trap 'rm -f "${TEMP_TEXT}" "${TEMP_LOG}"' EXIT
 #
 QUIET=${QUIET:-'no'}
 # 设置静默选项

@@ -90,7 +90,18 @@ rm -rf  to_user_crt/*
 find  my_conf/*  ! -iname  env.sh* -exec rm -f {} \;
 
 
-# create
+# create dir
+mkdir -p private
+chmod 700 private
+
+mkdir -p from_user_csr
+chmod 700 from_user_csr
+
+mkdir -p newcerts certs crl to_user_crt
+chmod 755 newcerts certs crl to_user_crt
+
+
+# create file
 > index.txt
 echo "01"  > serial
 echo "01"  > crlnumber

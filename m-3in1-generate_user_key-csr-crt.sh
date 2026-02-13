@@ -80,7 +80,7 @@ F_GEN_KEY_AND_CRT()
         -out "${SH_PATH}/from_user_csr/${NAME}.csr"  \
         -config  "${SH_PATH}/my_conf/openssl.cnf--${NAME}"  \
         ${QUIET_OPTION} \
-        2>&1  |  tee /tmp/${SH_NAME}-${NAME}-csr.log
+        2>&1  |  tee "${TEMP_CSR_LOG}"
     
     # 检查CSR是否生成成功
     if [ ! -f "${SH_PATH}/from_user_csr/${NAME}.csr" ]; then
@@ -100,7 +100,7 @@ F_GEN_KEY_AND_CRT()
         -config "${SH_PATH}/my_conf/openssl.cnf--${NAME}"  \
         -extensions v3_req  \
         ${QUIET_OPTION} \
-        2>&1  |  tee /tmp/${SH_NAME}-${NAME}-crt.log
+        2>&1  |  tee "${TEMP_CRT_LOG}"
     
     # 检查证书是否生成成功
     if [ ! -f "${SH_PATH}/to_user_crt/${NAME}.crt" ]; then
@@ -109,7 +109,7 @@ F_GEN_KEY_AND_CRT()
     fi
     
     # 检查日志中是否有成功信息
-    if ! grep -q 'Data Base Updated' /tmp/${SH_NAME}-${NAME}-crt.log; then
+    if ! grep -q 'Data Base Updated' "${TEMP_CRT_LOG}"; then
         echo -e "\n峰哥说：证书生成可能有问题，请检查日志\n"
     fi
     
@@ -219,6 +219,10 @@ else
     echo -e "\n峰哥说：环境参数文件【${SH_PATH}/my_conf/env.sh--${NAME}】未找到，请基于【${SH_PATH}/my_conf/env.sh--model】创建！\n"
     exit 1
 fi
+#
+TEMP_CSR_LOG=$(mktemp) || exit 1
+TEMP_CRT_LOG=$(mktemp) || exit 1
+trap 'rm -f "${TEMP_CSR_LOG}" "${TEMP_CRT_LOG}"' EXIT
 # 生成秘钥用法变量
 F_CERT_USE_FOR_VAR  "${CERT_USE_FOR}"
 if [ $? -ne 0 ]; then
