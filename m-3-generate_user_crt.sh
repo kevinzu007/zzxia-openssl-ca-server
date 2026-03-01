@@ -138,29 +138,16 @@ F_CSR_TO_CNF()
     export CERT_BITS=${CERT_BITS:-2048}          #--- 证书长度
     export CERT_DAYS=${CERT_DAYS:-365}           #--- 证书有效期
     #
-    # 获取主要信息
-    CSR_SUBJECT=$( cat "${TEMP_TEXT}"  \
-        | grep  'Subject: C' | sed 's/^ *//'  \
-        | awk -F ':' '{print $2}'  \
-        | sed 's/ = /=\"/g' | sed 's/,/\",/g' | sed 's/$/\"/' )
-    # env
-    # 将分隔符换成‘,’，然后完了再换回去
-    OLD_IFS="$IFS"
-    IFS=","
+    # 获取主要信息（安全方式，避免 eval 注入风险）
+    CSR_SUBJECT_LINE=$( cat "${TEMP_TEXT}" | grep 'Subject:' | sed 's/^ *//' )
     #
-    for LINE in $( echo ${CSR_SUBJECT} );
-    do
-        eval $( echo ${LINE} )
-    done
-    IFS="$OLD_IFS"
-    #
-    countryName_default="$C"
-    stateOrProvinceName_default="$ST"
-    localityName_default="$L"
-    organizationName_default0="$O"
-    organizationalUnitName_default="$OU"
-    emailAddress_default=$(echo "$CN" | cut -d '/' -f 2 | cut -d '=' -f 2)
-    commonName_default="`echo $CN | cut -d '/' -f 1`"
+    countryName_default=$( echo "${CSR_SUBJECT_LINE}" | sed -n 's/.*C = \([^,/]*\).*/\1/p' )
+    stateOrProvinceName_default=$( echo "${CSR_SUBJECT_LINE}" | sed -n 's/.*ST = \([^,/]*\).*/\1/p' )
+    localityName_default=$( echo "${CSR_SUBJECT_LINE}" | sed -n 's/.*L = \([^,/]*\).*/\1/p' )
+    organizationName_default0=$( echo "${CSR_SUBJECT_LINE}" | sed -n 's/.*O = \([^,/]*\).*/\1/p' )
+    organizationalUnitName_default=$( echo "${CSR_SUBJECT_LINE}" | sed -n 's/.*OU = \([^,/]*\).*/\1/p' )
+    commonName_default=$( echo "${CSR_SUBJECT_LINE}" | sed -n 's/.*CN = \([^,/]*\).*/\1/p' )
+    emailAddress_default=$( echo "${CSR_SUBJECT_LINE}" | sed -n 's/.*emailAddress = \([^,/]*\).*/\1/p' )
     #
     # 获取备用名称信息
     CSR_SUBJECT_A=$( cat "${TEMP_TEXT}"  \
