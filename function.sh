@@ -21,6 +21,47 @@ F_CHECK_OPENSSL()
 
 
 
+# 输出帮助文本中通用的参数规范说明
+F_HELP_PARAM_SPEC()
+{
+    echo "    参数规范：
+        无包围符号 ：-a                : 必选【选项】
+                   ：val               : 必选【参数值】
+                   ：val1 val2 -a -b   : 必选【选项或参数值】，且不分先后顺序
+        []         ：[-a]              : 可选【选项】
+                   ：[val]             : 可选【参数值】
+        <>         ：<val>             : 需替换的具体值（用户必须提供）
+        %%         ：%val%             : 通配符（包含匹配，如%error%匹配error_code）
+        |          ：val1|val2|<valn>  : 多选一
+        {}         ：{-a <val>}        : 必须成组出现【选项+参数值】，且保持顺序
+                   ：{val1 val2}       : 必须成组的【参数值组合】，且必须按顺序提供"
+}
+
+
+
+# 生成openssl.cnf配置文件并注入keyUsage等扩展
+# 使用前需要设置好环境变量（NAME, CERT_USE_FOR, MY_KEY_USAGE_S, MY_EXTENDED_KEY_USAGE_S）
+#
+# 用法：F_GENERATE_OPENSSL_CNF  <NAME>
+F_GENERATE_OPENSSL_CNF()
+{
+    local f_NAME=$1
+    # 生成基础 openssl.cnf
+    F_ECHO_OPENSSL_CNF > "${SH_PATH}/my_conf/openssl.cnf--${f_NAME}"
+    # keyUsage
+    sed -i "/^# keyUsage = 用逗号分隔/a\keyUsage = ${MY_KEY_USAGE_S}"  "${SH_PATH}/my_conf/openssl.cnf--${f_NAME}"
+    # extendedKeyUsage
+    if [ -n "${MY_EXTENDED_KEY_USAGE_S}" ]; then
+        sed -i "/^# extendedKeyUsage = 用逗号分隔/a\extendedKeyUsage = ${MY_EXTENDED_KEY_USAGE_S}"  "${SH_PATH}/my_conf/openssl.cnf--${f_NAME}"
+    fi
+    # CA:TRUE
+    if [ "${CERT_USE_FOR}" = '1' -o "${CERT_USE_FOR}" = 'ca' ]; then
+        sed -i 's/CA:FALSE/CA:TRUE/'  "${SH_PATH}/my_conf/openssl.cnf--${f_NAME}"
+    fi
+}
+
+
+
 # 生成证书用法变量
 # 此为一般用法，如果觉得不够，可以根据密钥用法手册【key_usage.md】增加自己想要的
 #
@@ -182,7 +223,7 @@ crl_extensions = crl_ext
 #
 default_days     = ${CERT_DAYS}          # how long to certify for
 default_crl_days = 30            # how long before next CRL
-default_md       = sha256        # use SHA-256 by default
+default_md       = ${CERT_MD:-sha256}        # use SHA-256 by default, 可通过 CERT_MD 环境变量配置
 preserve         = no            # keep passed DN ordering
 
 # 指定相似请求的不同方法
@@ -228,7 +269,7 @@ emailAddress        = optional
 ####################################################################
 [ req ]
 default_bits        = ${CERT_BITS}
-default_md          = sha256
+default_md          = ${CERT_MD:-sha256}
 default_keyfile     = privkey.pem
 distinguished_name  = req_distinguished_name    # 调用用户信息段[req_distinguished_name]
 attributes          = req_attributes            # 调用密码属性段[req_attributes]

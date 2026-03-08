@@ -16,11 +16,8 @@ cd "${SH_PATH}"
 GAN_WHAT_FUCK='生成用户密钥'
 NEED_PRIVILEGES='ADMIN'
 
-# 检查openssl是否存在
-if ! command -v openssl &> /dev/null; then
-    echo "错误：openssl未安装，请先安装openssl"
-    exit 1
-fi
+# 加载公共函数
+. "${SH_PATH}/function.sh"
 
 
 
@@ -39,17 +36,7 @@ F_HELP()
     用法:
         $0  -h|--help
         $0  {-n|--name <证书相关名称>}  [{-p|--privatekey-bits <私钥长度>}]  [-q|--quiet]
-    参数规范：
-        无包围符号 ：-a                : 必选【选项】
-                   ：val               : 必选【参数值】
-                   ：val1 val2 -a -b   : 必选【选项或参数值】，且不分先后顺序
-        []         ：[-a]              : 可选【选项】
-                   ：[val]             : 可选【参数值】
-        <>         ：<val>             : 需替换的具体值（用户必须提供）
-        %%         ：%val%             : 通配符（包含匹配，如%error%匹配error_code）
-        |          ：val1|val2|<valn>  : 多选一
-        {}         ：{-a <val>}        : 必须成组出现【选项+参数值】，且保持顺序
-                   ：{val1 val2}       : 必须成组的【参数值组合】，且必须按顺序提供
+$(F_HELP_PARAM_SPEC)
     参数说明：
         -h|--help                           此帮助
         -n|--name <证书相关名称>            指定名称，用以确定用户证书相关名称前缀及env、cnf文件名称后缀。
@@ -141,7 +128,7 @@ fi
 # env
 if [ -f "${SH_PATH}/my_conf/env.sh--${NAME}" ]; then
     . "${SH_PATH}/my_conf/env.sh--${NAME}"
-    #. ./function.sh
+    F_CHECK_OPENSSL
 else
     echo -e "\n峰哥说：环境参数文件【${SH_PATH}/my_conf/env.sh--${NAME}】未找到，请基于【${SH_PATH}/my_conf/env.sh--model】创建！\n"
     exit 1

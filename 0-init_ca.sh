@@ -14,6 +14,9 @@ cd "${SH_PATH}"
 GAN_WHAT_FUCK='CA服务器初始化'
 NEED_PRIVILEGES='ADMIN'
 
+# 加载公共函数
+. "${SH_PATH}/function.sh"
+
 
 F_HELP()
 {
@@ -28,17 +31,7 @@ F_HELP()
     用法：
         $0  -h|--help
         $0  -y|--yes
-    参数规范：
-        无包围符号 ：-a                : 必选【选项】
-                   ：val               : 必选【参数值】
-                   ：val1 val2 -a -b   : 必选【选项或参数值】，且不分先后顺序
-        []         ：[-a]              : 可选【选项】
-                   ：[val]             : 可选【参数值】
-        <>         ：<val>             : 需替换的具体值（用户必须提供）
-        %%         ：%val%             : 通配符（包含匹配，如%error%匹配error_code）
-        |          ：val1|val2|<valn>  : 多选一
-        {}         ：{-a <val>}        : 必须成组出现【选项+参数值】，且保持顺序
-                   ：{val1 val2}       : 必须成组的【参数值组合】，且必须按顺序提供
+$(F_HELP_PARAM_SPEC)
     参数说明：
         -h|--help                    此帮助
         -y|--yes                     初始化CA
