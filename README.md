@@ -27,16 +27,37 @@
 
 1. 初始化CA服务器
 2. 一步生成CA服务器私钥及证书
-3. 一步生成用户私钥及证书
+3. 一步生成用户私钥及证书（三合一）
 4. 分开步骤，分别为用户生成【私钥、证书请求、证书】
-5. 为第三方证书请求颁发证书
+5. 为第三方证书请求颁发证书（支持外部CSR文件）
 6. 为证书续期
 7. 吊销证书
-8. 生成CA证书吊销列表
+8. 生成CA证书吊销列表（CRL）
 
 
 
-### 1.3 喜欢她，就满足她：
+### 1.3 支持的证书类型
+
+通过配置文件中的 `CERT_USE_FOR` 参数指定，支持以下 **10 种** 预定义证书类型：
+
+| 编号 | 参数值      | 证书类型   | 密钥用法 (keyUsage) | 增强密钥用法 (extendedKeyUsage) |
+| ---- | ----------- | ---------- | ------------------- | ------------------------------- |
+| 1    | `ca`        | CA证书     | nonRepudiation, keyCertSign, cRLSign | - |
+| 2    | `code`      | 代码签名   | digitalSignature | codeSigning |
+| 3    | `computer`  | 计算机     | digitalSignature, keyAgreement | serverAuth |
+| 4    | `webserver` | WEB服务器  | digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment, keyAgreement | serverAuth |
+| 5    | `client`    | 客户端     | digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment | clientAuth |
+| 6    | `trustlist` | 信任列表   | digitalSignature | msCTLSign |
+| 7    | `timestamp` | 时间戳     | digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment | timeStamping |
+| 8    | `ipsec`     | IPSec      | digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment | 1.3.6.1.5.5.8.2.2 |
+| 9    | `email`     | 安全邮件   | digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment | emailProtection |
+| 10   | `smartcard` | 智能卡登录 | digitalSignature, keyAgreement, decipherOnly | msEFS, 1.3.6.1.4.1.311.20.2.2 |
+
+> 如需增加自定义证书类型，请参考 `key_usage.md` 并修改 `function.sh` 中的 `F_CERT_USE_FOR_VAR` 函数。
+
+
+
+### 1.4 喜欢她，就满足她：
 
 1. 【Star】她，让她看到你是爱她的；
 2. 【Watching】她，时刻感知她的动态；
@@ -56,74 +77,142 @@ Linux shell
 ### 2.1 设计理念
 
 - 用Openssl搭建CA服务器
-- 信任环境：在CA服务器上为用户生成私钥与证书
-- 非信任环境：用户自己生成私钥与证书请求，将证书请求给到CA服务器，CA服务器根据用户提供的证书请求文件为用户生成证书（私钥一般是需要保密的，把自己假想成了NB的公共证书颁发者了）
+- **信任环境**：在CA服务器上为用户生成私钥与证书
+- **非信任环境**：用户自己生成私钥与证书请求，将证书请求给到CA服务器，CA服务器根据用户提供的证书请求文件为用户生成证书（私钥一般是需要保密的，把自己假想成了NB的公共证书颁发者了）
 
 
 
-### 2.2 目录结构
+### 2.2 脚本说明
+
+| 脚本名称 | 用途 |
+| -------- | ---- |
+| `0-init_ca.sh` | 初始化CA服务器环境 |
+| `1-generate_CA_key_and_crt.sh` | 生成CA服务器私钥与自签名证书 |
+| `m-1-generate_user_key.sh` | 为用户生成私钥 |
+| `m-2-generate_user_csr.sh` | 为用户生成证书请求（CSR） |
+| `m-3-generate_user_crt.sh` | 为用户颁发证书（支持外部CSR） |
+| `m-3in1-generate_user_key-csr-crt.sh` | 一键为用户生成私钥、CSR、证书 |
+| `m-x-renew_user_crt.sh` | 证书续期（`m-3-generate_user_crt.sh` 的软链接） |
+| `m-x-revoke_user_crt.sh` | 吊销用户证书 |
+| `m-x-generate_CA_crl.sh` | 生成/更新CA证书吊销列表（CRL） |
+| `function.sh` | 公共函数库（自动被各脚本加载） |
+| `test_ca.sh` | 自动化测试脚本 |
+
+
+
+### 2.3 目录结构
 
 > 初始化后的目录结构：
 
 ```bash
 $ tree
 .
-├── 0-init_ca.sh
-├── 1-generate_CA_key_and_crt.sh
-├── blog-自建CA及证书颁发-old.md
-├── crlnumber
-├── function.sh
-├── index.txt
-├── key_usage.md
-├── LICENSE
-├── m-1-generate_user_key.sh
-├── m-2-generate_user_csr.sh
-├── m-3-generate_user_crt.sh
-├── m-3in1-generate_user_key-csr-crt.sh
-├── m-x-revoke_user_crt.sh
-├── m-x-renew_user_crt.sh
-├── m-x-generate_CA_crl.sh
-├── my_conf
-│   ├── env.sh--CA.sample
-│   ├── env.sh--model
-│   └── env.sh--test.lan
-├── README.md
-└── serial
-
-1 directory, 17 files
+├── 0-init_ca.sh                          # 初始化CA
+├── 1-generate_CA_key_and_crt.sh          # 生成CA密钥与证书
+├── function.sh                           # 公共函数库
+├── m-1-generate_user_key.sh              # 生成用户私钥
+├── m-2-generate_user_csr.sh              # 生成用户证书请求
+├── m-3-generate_user_crt.sh              # 颁发用户证书
+├── m-3in1-generate_user_key-csr-crt.sh   # 一键生成
+├── m-x-renew_user_crt.sh                 # 证书续期（软链接）
+├── m-x-revoke_user_crt.sh               # 吊销证书
+├── m-x-generate_CA_crl.sh               # 生成CRL
+├── test_ca.sh                            # 自动化测试
+├── key_usage.md                          # 密钥用法参考手册
+├── my_conf/
+│   ├── env.sh--CA.sample                 # CA配置示例
+│   ├── env.sh--model                     # 用户证书配置模板
+│   └── env.sh--test.lan                  # 用户证书配置示例
+├── private/                              # CA私钥目录（权限700）
+├── from_user_csr/                        # 用户私钥与CSR存放目录
+├── to_user_crt/                          # 颁发的用户证书存放目录
+├── newcerts/                             # CA颁发证书备份
+├── certs/                                # 证书存放目录
+├── crl/                                  # CRL存放目录
+├── index.txt                             # CA证书数据库
+├── serial                                # 证书序列号（初始值01）
+└── crlnumber                             # CRL序列号（初始值01）
 ```
 
 
 
 ## 3 安装教程
 
-克隆到服务器上即可。
-需要安装Linux 软件包`openssl`。
-在ubuntu上测试通过，理论上只要是基于Linux内核都行
+### 3.1 环境要求
+
+- 操作系统：Linux（在 Ubuntu、CentOS 7 上测试通过）
+- 依赖软件：`openssl`（必须）、`bash`
+
+### 3.2 安装
+
+```bash
+# 克隆仓库
+git clone https://gitee.com/zhf_sy/zzxia-openssl-ca-server.git
+cd zzxia-openssl-ca-server
+
+# 确认openssl已安装
+openssl version
+```
 
 
 
 ## 4 使用说明
 
-所有脚本都提供了`$0 -h|--help`参数，查看帮助即可。
+所有脚本都提供了 `-h|--help` 参数，查看帮助即可。
 
 
 
 ### 4.1 搭建CA
 
-1. 运行`./0-init_ca.sh -y`进行初始化
-2. 基于`./my_conf/env.sh--CA.sample`创建`./my_conf/env.sh--CA`CA的环境变量文件
-3. 运行`1-generate_CA_key_and_crt.sh -y`以生成CA服务器私钥与自签名证书
-> 以上根据自己的信息填写即可
+**第一步：初始化**
+
+```bash
+./0-init_ca.sh -y
+```
+
+**第二步：创建CA配置文件**
+
+```bash
+# 基于示例创建CA配置文件，根据自己的信息修改
+cp ./my_conf/env.sh--CA.sample ./my_conf/env.sh--CA
+vi ./my_conf/env.sh--CA
+```
+
+主要配置项：
+
+| 变量 | 说明 | 示例 |
+| ---- | ---- | ---- |
+| `PRIVATEKEY_BITS` | 私钥长度 | `4096` |
+| `CERT_BITS` | 证书长度 | `4096` |
+| `CERT_DAYS` | 证书有效期（天） | `3650`（10年） |
+| `CERT_MD` | 签名摘要算法 | `sha256` |
+| `commonName_default` | CA通用名称 | `MY-ROOT-CA` |
+| `CERT_USE_FOR` | 证书类型 | `1`（CA） |
+| `alt_names` | 备用名称（SAN） | `DNS.1 = MY-ROOT-CA` |
+
+**第三步：生成CA密钥与证书**
+
+```bash
+./1-generate_CA_key_and_crt.sh -y
+```
+
+> 生成过程中会以交互方式进行，根据提示填写CA相关信息即可。
 
 
 
 ### 4.2 日常使用（为用户生成私钥、证书请求、证书）
 
-> 运行脚本前，请先查看帮助，帮助中有相关脚本的依赖文件、参数说明及示例！
-> 多数脚本须依赖基于`./my_conf/env.sh--model`创建的`./my_conf/env.sh--证书相关名称`环境变量文件，仓库中提供了一个示例（test.lan）`./my_conf/env.sh--test.lan`供参考。
+> 运行脚本前，请先查看帮助（`-h`），帮助中有相关脚本的依赖文件、参数说明及示例！
+> 多数脚本须依赖基于 `./my_conf/env.sh--model` 创建的 `./my_conf/env.sh--证书相关名称` 环境变量文件，仓库中提供了一个示例（test.lan）`./my_conf/env.sh--test.lan` 供参考。
 
+**准备工作：创建用户证书配置文件**
 
+```bash
+# 以 example.com 为例
+cp ./my_conf/env.sh--model ./my_conf/env.sh--example.com
+vi ./my_conf/env.sh--example.com
+# 修改 commonName_default、alt_names、CERT_USE_FOR 等参数
+```
 
 #### 4.2.1 一步为用户生成私钥、证书请求、证书
 
@@ -143,49 +232,37 @@ graph LR;
 0-->6
 ```
 
->帮助：
+>示例：
 
 ```bash
-$ ./m-3in1-generate_user_key-csr-crt.sh -h
+# 基本用法
+./m-3in1-generate_user_key-csr-crt.sh  -n example.com
 
-    用途：用于生成用户秘钥与证书
-    依赖：
-        ./function.sh
-        ./my_conf/env.sh--${NAME}      #--- 此文件须自行基于【./my_conf/env.sh--model】创建
-    注意：
-    用法:
-        ./m-3in1-generate_user_key-csr-crt.sh  [-h|--help]
-        ./m-3in1-generate_user_key-csr-crt.sh  [-n|--name {证书名称}]  <-p|--privatekey-bits {私钥长度}>  <-c|--cert-bits {证书长度}>  <-d|--days {证书有效天数}>  <-q|--quiet>
-    参数说明：
-        $0   : 代表脚本本身
-        []   : 代表是必选项
-        <>   : 代表是可选项
-        |    : 代表左右选其一
-        {}   : 代表参数值，请替换为具体参数值
-        %    : 代表通配符，非精确值，可以被包含
-        #
-        -h|--help      此帮助
-        -n|--name      指定名称，用以确定用户证书相关名称前缀及env、cnf文件名称后缀。
-                       即：【私钥、证书请求、证书】的文件名称前缀：test.com.key、test.com.csr、test.com.crt
-                           【环境变量、配置】文件名的后缀：env.sh--test.com、openssl.cnf--test.com
-        -p|--privatekey-bits  私钥长度，默认2048
-        -c|--cert-bits 证书长度，默认2048
-        -d|--days      证书有效期，默认365天
-        -q|--quiet     静默方式运行
-    示例:
-        ./m-3in1-generate_user_key-csr-crt.sh  -n test.com
-        #
-        ./m-3in1-generate_user_key-csr-crt.sh  -n test.com  -d 730
-        ./m-3in1-generate_user_key-csr-crt.sh  -n test.com  -p 4096
-        ./m-3in1-generate_user_key-csr-crt.sh  -n test.com  -p 4096  -c 2048  -d 730
-        ./m-3in1-generate_user_key-csr-crt.sh  -n test.com  -q
+# 指定有效期730天、私钥4096位
+./m-3in1-generate_user_key-csr-crt.sh  -n example.com  -p 4096  -d 730
+
+# 静默模式（使用配置文件中的默认值，不提示交互）
+./m-3in1-generate_user_key-csr-crt.sh  -n example.com  -q
 ```
 
+| 参数 | 说明 | 默认值 |
+| ---- | ---- | ------ |
+| `-n\|--name` | 证书相关名称（**必填**） | - |
+| `-p\|--privatekey-bits` | 私钥长度 | 2048 |
+| `-c\|--cert-bits` | 证书长度 | 2048 |
+| `-d\|--days` | 证书有效天数 | 365 |
+| `-q\|--quiet` | 静默模式 | - |
 
 
 #### 4.2.2 分步骤为用户生成私钥、证书请求、证书
 
-1. 生成私钥：
+**1. 生成私钥：**
+
+```bash
+./m-1-generate_user_key.sh  -n example.com
+# 指定私钥长度4096位
+./m-1-generate_user_key.sh  -n example.com  -p 4096
+```
 
 >程序流程图：
 
@@ -195,39 +272,14 @@ graph LR;
 1-->4(证书相关名称.key)
 ```
 
->帮助：
+
+**2. 生成证书请求：**
 
 ```bash
-$ ./m-1-generate_user_key.sh -h
-
-    用途：用于生成用户秘钥
-    依赖：
-        ./function.sh
-    注意：
-    用法:
-        ./m-1-generate_user_key.sh  [-h|--help]
-        ./m-1-generate_user_key.sh  [-n|--name {证书相关名称}]  <-p|--privatekey-bits {私钥长度}>  <-q|--quiet>
-    参数说明：
-        $0   : 代表脚本本身
-        []   : 代表是必选项
-        <>   : 代表是可选项
-        |    : 代表左右选其一
-        {}   : 代表参数值，请替换为具体参数值
-        %    : 代表通配符，非精确值，可以被包含
-        #
-        -h|--help      此帮助
-        -n|--name      指定名称，用以确定用户证书相关名称前缀及env、cnf文件名称后缀。
-                       即：【私钥、证书请求、证书】的文件名称前缀：test.com.key、test.com.csr、test.com.crt
-                           【环境变量、配置】文件名的后缀：env.sh--test.com、openssl.cnf--test.com
-        -p|--privatekey-bits  私钥长度，默认2048
-        -q|--quiet     静默方式运行
-    示例:
-        ./m-1-generate_user_key.sh  -n test.com
-        ./m-1-generate_user_key.sh  -p 4096  -n test.com
-        ./m-1-generate_user_key.sh  -q  -n test.com
+./m-2-generate_user_csr.sh  -n example.com
+# 静默模式
+./m-2-generate_user_csr.sh  -n example.com -q
 ```
-
-2. 生成证书请求：
 
 >程序流程图：
 
@@ -241,40 +293,21 @@ graph LR;
 4-->5
 ```
 
->帮助：
+
+**3. 颁发证书：**
 
 ```bash
-$ ./m-2-generate_user_csr.sh -h
+# 使用本系统生成的CSR
+./m-3-generate_user_crt.sh  -n example.com
 
-    用途：用于生成用户证书请求
-    依赖：
-        ./function.sh
-        ./my_conf/env.sh--${NAME}      #--- 此文件须自行基于【./my_conf/env.sh--model】创建
-    注意：
-    用法:
-        ./m-2-generate_user_csr.sh  [-h|--help]
-        ./m-2-generate_user_csr.sh  [-n|--name {证书相关名称}]  <-q|--quiet>
-    参数说明：
-        $0   : 代表脚本本身
-        []   : 代表是必选项
-        <>   : 代表是可选项
-        |    : 代表左右选其一
-        {}   : 代表参数值，请替换为具体参数值
-        %    : 代表通配符，非精确值，可以被包含
-        #
-        -h|--help      此帮助
-        -n|--name      指定名称，用以确定用户证书相关名称前缀及env、cnf文件名称后缀。
-                       即：【私钥、证书请求、证书】的文件名称前缀：test.com.key、test.com.csr、test.com.crt
-                           【环境变量、配置】文件名的后缀：env.sh--test.com、openssl.cnf--test.com
-        -q|--quiet     静默方式运行
-    示例:
-        ./m-2-generate_user_csr.sh  -n test.com
-        ./m-2-generate_user_csr.sh  -n test.com -q
+# 指定有效期和证书长度
+./m-3-generate_user_crt.sh  -n example.com  -c 4096  -d 730
+
+# 使用第三方CSR文件
+./m-3-generate_user_crt.sh  -f /path/to/xxx.csr  -n example.com
 ```
 
-3. 颁发证书（证书第一次颁发、证书续期重新颁发）：
-
->程序流程图：
+>程序流程图（使用本系统CSR）：
 
 ```mermaid
 graph LR;
@@ -287,7 +320,7 @@ graph LR;
 0-->6
 ```
 
-或者：
+>程序流程图（使用外部CSR）：
 
 ```mermaid
 graph LR;
@@ -300,46 +333,6 @@ graph LR;
 0-->6
 ```
 
->帮助：
-
-```bash
-$ ./m-3-generate_user_crt.sh -h
-
-    用途：用于颁发或更新用户证书
-    依赖：
-        ./function.sh
-        ./my_conf/env.sh--${NAME}      #--- 此文件须自行基于【./my_conf/env.sh--model】创建，当使用外部证书请求文件时，无须此配置文件
-    注意：
-    用法:
-        ./m-3-generate_user_crt.sh  [-h|--help]
-        ./m-3-generate_user_crt.sh  [-n|--name {证书相关名称}]  <-c|--cert-bits {证书长度}>  <-d|--days {证书有效天数}>  <-f|--csr-file {证书请求文件}>  <-q|--quiet>
-    参数说明：
-        $0   : 代表脚本本身
-        []   : 代表是必选项
-        <>   : 代表是可选项
-        |    : 代表左右选其一
-        {}   : 代表参数值，请替换为具体参数值
-        %    : 代表通配符，非精确值，可以被包含
-        #
-        -h|--help      此帮助
-        -n|--name      指定名称，用以确定用户证书相关名称前缀及env、cnf文件名称后缀。
-                       即：【私钥、证书请求、证书】的文件名称前缀：test.com.key、test.com.csr、test.com.crt
-                           【环境变量、配置】文件名的后缀：env.sh--test.com、openssl.cnf--test.com
-        -f|--csr-file  指定外部用户证书请求文件。一般只有在用户使用其他工具生成证书请求时使用此项
-        -c|--cert-bits 证书长度，默认2048
-        -d|--days      证书有效期，默认365天
-        -q|--quiet     静默方式运行
-    示例:
-        ./m-3-generate_user_crt.sh  -n test.com
-        #
-        ./m-3-generate_user_crt.sh  -c 4096  -n test.com
-        ./m-3-generate_user_crt.sh  -d 730   -n test.com
-        ./m-3-generate_user_crt.sh  -c 4096  -d 730  -n test.com
-        # 第三方证书请求
-        ./m-3-generate_user_crt.sh  -f /path/to/xxx.csr  -n xxxxx
-        ./m-3-generate_user_crt.sh  -c 4096  -d 730  -f /path/to/xxx.csr  -n xxxxx
-```
-
 > 如果曾经颁发的证书过期了，只需再次运行`m-3-generate_user_crt.sh`就可以了，为了便于用户理解，增加了个软连接名称`m-x-renew_user_crt.sh`。
 
 
@@ -350,46 +343,105 @@ $ ./m-3-generate_user_crt.sh -h
 
 #### 4.3.1 更新（renew）用户证书
 
-等同【4.2.2 - 3】为用户生成证书，请参考
+等同【4.2.2 - 3】为用户生成证书，请参考。
+
+```bash
+./m-x-renew_user_crt.sh  -n example.com
+```
 
 
 
 #### 4.3.2 吊销（revoke）用户证书
 
 ```bash
-./m-x-revoke_user_crt.sh
+./m-x-revoke_user_crt.sh  -n example.com
 ```
 
+> 吊销后请记得更新CRL吊销列表！
 
 
-#### 4.3.3 吊销（revoke）用户证书
+
+#### 4.3.3 生成CA证书吊销列表（CRL）
 
 ```bash
-./m-x-generate_CA_crl.sh
+./m-x-generate_CA_crl.sh  -y
+```
+
+> 吊销证书后务必运行此命令更新CRL，以便客户端能够感知到证书已被吊销。
+
+
+
+## 5 配置文件说明
+
+配置文件存放在 `my_conf/` 目录下。
+
+### 5.1 模板文件
+
+| 文件 | 说明 |
+| ---- | ---- |
+| `env.sh--CA.sample` | CA证书配置示例，使用前复制为 `env.sh--CA` |
+| `env.sh--model` | 用户证书配置模板，创建新用户证书时基于此模板复制 |
+| `env.sh--test.lan` | 用户证书配置示例（test.lan） |
+
+### 5.2 主要配置参数
+
+```bash
+## 私钥
+export PRIVATEKEY_BITS=${PRIVATEKEY_BITS:-2048}    # 私钥长度
+
+## 证书
+export CERT_BITS=${CERT_BITS:-2048}                # 证书长度
+export CERT_DAYS=${CERT_DAYS:-365}                 # 证书有效期（天）
+export CERT_MD=${CERT_MD:-sha256}                  # 签名摘要算法
+
+## 用户信息
+export countryName_default="CN"                    # 国家
+export stateOrProvinceName_default="GuangDong"     # 省份
+export localityName_default="GuangZhou"            # 城市
+export organizationName_default0="ZZXia"           # 组织
+export organizationalUnitName_default="IT"         # 部门
+export emailAddress_default="admin@test.lan"       # 邮箱
+export commonName_default="test.lan"               # 通用名称（CN）
+
+## 备用名称（SAN）
+export alt_names=$(echo "
+DNS.1 = test.lan
+DNS.2 = *.test.lan
+IP.1 = 192.168.1.1
+")
+
+## 证书类型（参考 1.3 支持的证书类型）
+export CERT_USE_FOR='4'    # 4=webserver
 ```
 
 
 
+## 6 测试
+
+项目包含自动化测试脚本，覆盖 CA 全生命周期：
+
+```bash
+bash test_ca.sh
+```
+
+测试内容包括：
+- `F_CERT_USE_FOR_VAR` 函数的 10 种证书类型校验
+- CA 初始化
+- CA 密钥与证书生成
+- 用户密钥生成
+- 用户 CSR 生成
+- 用户证书颁发与 CA 验证
+- 一键生成（三合一）
+- 证书吊销
+- CRL 生成
+
+> 测试在临时目录中运行，不影响项目数据。
 
 
 
-## 5 参与贡献
+## 7 参与贡献
 
 1.  Fork 本仓库
 2.  新建 Feat_xxx 分支
 3.  提交代码
 4.  新建 Pull Request
-
-
-
-## 6 特技
-
-1.  使用 Readme\_XXX.md 来支持不同的语言，例如 Readme\_en.md, Readme\_zh.md
-2.  Gitee 官方博客 [blog.gitee.com](https://blog.gitee.com)
-3.  你可以 [https://gitee.com/explore](https://gitee.com/explore) 这个地址来了解 Gitee 上的优秀开源项目
-4.  [GVP](https://gitee.com/gvp) 全称是 Gitee 最有价值开源项目，是综合评定出的优秀开源项目
-5.  Gitee 官方提供的使用手册 [https://gitee.com/help](https://gitee.com/help)
-6.  Gitee 封面人物是一档用来展示 Gitee 会员风采的栏目 [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
-
-
-
