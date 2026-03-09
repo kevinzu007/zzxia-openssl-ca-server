@@ -8,7 +8,7 @@
 
 
 # sh
-SH_NAME=${0##*/}
+#SH_NAME=${0##*/}
 SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd "${SH_PATH}"
 
@@ -88,7 +88,7 @@ do
         -p|--privatekey-bits)
             PRIVATEKEY_BITS=$2
             shift 2
-            if [[ ! ${PRIVATEKEY_BITS} =~ ^[1-9]+[0-9]*$ ]]; then
+            if [[ ! ${PRIVATEKEY_BITS} =~ ^[1-9][0-9]*$ ]]; then
                 echo -e "\n峰哥说：参数值【-p|--privatekey-bits】必须为正整数！\n"
                 exit 1
             fi

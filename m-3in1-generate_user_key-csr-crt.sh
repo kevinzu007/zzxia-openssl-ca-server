@@ -8,7 +8,7 @@
 
 
 # sh
-SH_NAME=${0##*/}
+#SH_NAME=${0##*/}
 SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd "${SH_PATH}"
 
@@ -141,7 +141,7 @@ do
             PRIVATEKEY_BITS=$2
             shift 2
             #
-            if [[ ! ${PRIVATEKEY_BITS} =~ ^[1-9]+[0-9]*$ ]]; then
+            if [[ ! ${PRIVATEKEY_BITS} =~ ^[1-9][0-9]*$ ]]; then
                 echo -e "\n峰哥说：参数值【-p|--privatekey-bits】必须为正整数！\n"
                 exit 1
             fi
@@ -156,7 +156,7 @@ do
             CERT_BITS=$2
             shift 2
             #
-            if [[ ! ${CERT_BITS} =~ ^[1-9]+[0-9]*$ ]]; then
+            if [[ ! ${CERT_BITS} =~ ^[1-9][0-9]*$ ]]; then
                 echo -e "\n峰哥说：参数值【-c|--cert-bits】必须为正整数！\n"
                 exit 1
             fi
@@ -205,7 +205,6 @@ fi
 # env
 if [ -f "${SH_PATH}/my_conf/env.sh--${NAME}" ]; then
     . "${SH_PATH}/my_conf/env.sh--${NAME}"
-    . ./function.sh
     F_CHECK_OPENSSL
 else
     echo -e "\n峰哥说：环境参数文件【${SH_PATH}/my_conf/env.sh--${NAME}】未找到，请基于【${SH_PATH}/my_conf/env.sh--model】创建！\n"

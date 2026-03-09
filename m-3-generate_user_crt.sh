@@ -8,7 +8,7 @@
 
 
 # sh
-SH_NAME=${0##*/}
+#SH_NAME=${0##*/}
 SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd "${SH_PATH}"
 
@@ -148,12 +148,31 @@ F_CSR_TO_CNF()
         | sed 's/,//g' )
     # env
     alt_names=''
-    i=1
+    local dns_i=1
+    local ip_i=1
+    local email_i=1
     for LINE in $( echo ${CSR_SUBJECT_A} );
     do
-        V=$( echo $LINE | cut -d ':' -f 2 )
-        alt_names="${alt_names}DNS.$i = $V\n"
-        let i=$i+1
+        local PREFIX=$( echo "$LINE" | cut -d ':' -f 1 )
+        local V=$( echo "$LINE" | cut -d ':' -f 2 )
+        case "${PREFIX}" in
+            DNS)
+                alt_names="${alt_names}DNS.${dns_i} = ${V}\n"
+                let dns_i=$dns_i+1
+                ;;
+            IP)
+                alt_names="${alt_names}IP.${ip_i} = ${V}\n"
+                let ip_i=$ip_i+1
+                ;;
+            email)
+                alt_names="${alt_names}email.${email_i} = ${V}\n"
+                let email_i=$email_i+1
+                ;;
+            *)
+                alt_names="${alt_names}DNS.${dns_i} = ${V}\n"
+                let dns_i=$dns_i+1
+                ;;
+        esac
     done
     #
     # 用获取的信息生成openssl.cnf
@@ -196,7 +215,7 @@ F_CSR_TO_CNF()
     echo
     echo "证书请求信息如下："
     echo '------------------------------------------------------------'
-    echo 主题：${CSR_SUBJECT}
+    echo 主题：${CSR_SUBJECT_LINE}
     echo 备用主题：${CSR_SUBJECT_A}
     echo 基本约束：${CSR_BASIC}
     echo 秘钥用法：${CSR_KEY_USAGES}
@@ -263,7 +282,7 @@ do
         -c|--cert-bits)
             CERT_BITS=$2
             shift 2
-            if [[ ! ${CERT_BITS} =~ ^[1-9]+[0-9]*$ ]]; then
+            if [[ ! ${CERT_BITS} =~ ^[1-9][0-9]*$ ]]; then
                 echo -e "\n峰哥说：参数值【-c|--cert-bits】必须为正整数！\n"
                 exit 1
             fi
@@ -315,7 +334,6 @@ fi
 # env
 if [ -f "${SH_PATH}/my_conf/env.sh--${NAME}" ]; then
     . "${SH_PATH}/my_conf/env.sh--${NAME}"     #--- 仅使用 $CERT_BITS、$CERT_DAYS 变量，其他变量会被csr中的值覆盖
-    . ./function.sh
     F_CHECK_OPENSSL
 else
     echo -e "\n峰哥说：环境参数文件【${SH_PATH}/my_conf/env.sh--${NAME}】未找到，请基于【${SH_PATH}/my_conf/env.sh--model】创建！\n"

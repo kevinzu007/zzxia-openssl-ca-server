@@ -8,7 +8,7 @@
 
 
 # sh
-SH_NAME=${0##*/}
+#SH_NAME=${0##*/}
 SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd "${SH_PATH}"
 
@@ -92,7 +92,6 @@ fi
 CA_NAME='CA'
 if [ -f "${SH_PATH}/my_conf/env.sh--${CA_NAME}" ]; then
     . "${SH_PATH}/my_conf/env.sh--${CA_NAME}"
-    . ./function.sh
     F_CHECK_OPENSSL
 else
     echo -e "\n峰哥说：环境参数文件【${SH_PATH}/my_conf/env.sh--${CA_NAME}】未找到！\n"
@@ -101,17 +100,13 @@ fi
 
 
 # cnf (重新生成CA的配置文件，确保一致性)
-F_ECHO_OPENSSL_CNF > "${SH_PATH}/my_conf/openssl.cnf--${CA_NAME}"
-# CA配置通常需要开启CA:TRUE等，虽然revoke可能只需要基本配置，但保持完整性更好
-# 这里简单处理，因为function.sh中的F_ECHO_OPENSSL_CNF生成的默认配置对CA操作通常够用了
-# 只要[ ca ] 和 [ CA_default ] 段落正确指向了 index.txt 等文件即可。
-# 根据 function.sh，F_ECHO_OPENSSL_CNF 使用 ${SH_PATH} 变量，这是正确的。
-# 且 default_ca = CA_default，CA_default 中指向了 dir = ${SH_PATH}。
-# 所以直接使用生成的默认配置即可。
-
-# CA特有配置修正 (参考 1-generate_CA_key_and_crt.sh)
-# 主要是为了保险起见，将CA:TRUE等设置好，虽然revoke命令可能不检查这些约束
-sed -i 's/CA:FALSE/CA:TRUE/'  "${SH_PATH}/my_conf/openssl.cnf--${CA_NAME}"
+# 生成CA秘钥用法变量
+F_CERT_USE_FOR_VAR  "${CERT_USE_FOR}"
+if [ $? -ne 0 ]; then
+    echo -e "\n峰哥说：配置文件【${SH_PATH}/my_conf/env.sh--${CA_NAME}】中的参数【CERT_USE_FOR】设置错误，请检查\n"
+    exit 1
+fi
+F_GENERATE_OPENSSL_CNF "${CA_NAME}"
 
 
 # check cert file

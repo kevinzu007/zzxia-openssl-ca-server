@@ -6,7 +6,7 @@
 #############################################################################
 
 # sh
-SH_NAME=${0##*/}
+#SH_NAME=${0##*/}
 SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd "${SH_PATH}"
 
@@ -60,7 +60,6 @@ esac
 NAME='CA'
 if [ -f "${SH_PATH}/my_conf/env.sh--${NAME}" ]; then
     . "${SH_PATH}/my_conf/env.sh--${NAME}"
-    . ./function.sh
     F_CHECK_OPENSSL
 else
     echo -e "\n峰哥说：环境参数文件【${SH_PATH}/my_conf/env.sh--${NAME}】未找到！\n"
@@ -74,8 +73,13 @@ if [ ! -f "${SH_PATH}/crlnumber" ]; then
 fi
 
 # cnf
-F_ECHO_OPENSSL_CNF > "${SH_PATH}/my_conf/openssl.cnf--${NAME}"
-sed -i 's/CA:FALSE/CA:TRUE/'  "${SH_PATH}/my_conf/openssl.cnf--${NAME}"
+# 生成CA秘钥用法变量
+F_CERT_USE_FOR_VAR  "${CERT_USE_FOR}"
+if [ $? -ne 0 ]; then
+    echo -e "\n峰哥说：配置文件【${SH_PATH}/my_conf/env.sh--${NAME}】中的参数【CERT_USE_FOR】设置错误，请检查\n"
+    exit 1
+fi
+F_GENERATE_OPENSSL_CNF "${NAME}"
 
 # CRL
 echo -e "\n正在生成CRL吊销列表..."

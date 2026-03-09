@@ -8,7 +8,7 @@
 
 
 # sh
-SH_NAME=${0##*/}
+#SH_NAME=${0##*/}
 SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd "${SH_PATH}"
 
@@ -68,7 +68,6 @@ NAME='CA'
 #
 if [ -f "${SH_PATH}/my_conf/env.sh--${NAME}" ]; then
     . "${SH_PATH}/my_conf/env.sh--${NAME}"
-    . ./function.sh
     F_CHECK_OPENSSL
 else
     echo -e "\n峰哥说：环境参数文件【${SH_PATH}/my_conf/env.sh--${NAME}】未找到，请基于【${SH_PATH}/my_conf/env.sh--model】创建！\n"
