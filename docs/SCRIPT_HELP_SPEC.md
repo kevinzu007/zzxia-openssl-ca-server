@@ -8,12 +8,12 @@ F_HELP()
     echo "
     用途：[脚本功能描述]
     特征码：
-        \${GAN_WHAT_FUCK:-'未命名'}
+        ${GAN_WHAT_FUCK:-'未命名'}
     权限要求：
-        \${NEED_PRIVILEGES:-'未指定'}
+        ${NEED_PRIVILEGES:-'未指定'}
     依赖：
         ./function.sh
-        ./my_conf/env.sh--\${NAME}      #--- [依赖说明]
+        ./my_conf/env.sh--<NAME>      #--- [依赖说明]
     注意：[注意事项]
     用法：
         $0  -h|--help
