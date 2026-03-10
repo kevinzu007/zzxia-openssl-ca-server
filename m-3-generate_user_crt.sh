@@ -215,7 +215,7 @@ F_CSR_TO_CNF()
     echo
     echo "证书请求信息如下："
     echo '------------------------------------------------------------'
-    echo 主题：${CSR_SUBJECT_LINE}
+    echo 主题：${CSR_SUBJECT}
     echo 备用主题：${CSR_SUBJECT_A}
     echo 基本约束：${CSR_BASIC}
     echo 秘钥用法：${CSR_KEY_USAGES}
