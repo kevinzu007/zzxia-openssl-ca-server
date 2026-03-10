@@ -556,6 +556,12 @@ keyUsage = nonRepudiation,keyCertSign,cRLSign
 ##nsCertType = sslCA,emailCA
 
 
+# PKIX另一个建议：在主题备用名称中包含电子邮件地址
+# Include email address in subject alt name: another PKIX recommendation
+#subjectAltName = email:copy
+# 拷贝发行人信息
+# Copy issuer details
+#issuerAltName = issuer:copy
 # zhf_sy --- CA证书也需要备用名称(SAN)
 subjectAltName = @alt_names
 
