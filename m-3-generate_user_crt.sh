@@ -186,6 +186,9 @@ F_CSR_TO_CNF()
         | sed 's/,//g' )
     if [ "${CSR_BASIC}" = 'CA:TRUE' ]; then
         sed -i 's/CA:FALSE/CA:TRUE/'  "${SH_PATH}/my_conf/openssl.cnf--${NAME}"
+        EXTENSIONS_SECTION='v3_ca'
+    else
+        EXTENSIONS_SECTION='usr_cert'
     fi
     #
     # 获取秘钥用法，并修改openssl.cnf
@@ -231,10 +234,11 @@ F_GEN_CRT()
     F_CSR_FILE=$1
     # crt
     # 注意：签名主要信息从csr文件获取，而备用名称需要从openssl.cnf文件里的[alt_name]中获取
-    #       CA信息从从openssl.cnf文件中获取，【-extensions v3_req】是必须项
+    #       CA信息从从openssl.cnf文件中获取
+    #       CA/sub-CA证书使用 v3_ca 扩展段，其他证书使用 v3_req 扩展段
     openssl ca  -in "${F_CSR_FILE}"  \
         -out "${SH_PATH}/to_user_crt/${NAME}.crt"  \
-        -extensions v3_req  \
+        -extensions ${EXTENSIONS_SECTION}  \
         -config "${SH_PATH}/my_conf/openssl.cnf--${NAME}"  \
         ${QUIET_OPTION} \
         2>&1  |  tee "${TEMP_LOG}"
@@ -350,6 +354,13 @@ if [ "${QUIET}" = 'yes' ]; then
     QUIET_OPTION="-batch"
 else
     QUIET_OPTION=""
+fi
+
+# 根据证书类型选择扩展段：CA/sub-CA 使用 v3_ca，其他使用 v3_req
+if [ "${CERT_USE_FOR}" = '1' -o "${CERT_USE_FOR}" = 'ca' ]; then
+    EXTENSIONS_SECTION='v3_ca'
+else
+    EXTENSIONS_SECTION='usr_cert'
 fi
 
 

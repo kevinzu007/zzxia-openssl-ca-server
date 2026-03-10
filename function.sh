@@ -48,9 +48,9 @@ F_GENERATE_OPENSSL_CNF()
     local f_NAME=$1
     # 生成基础 openssl.cnf
     F_ECHO_OPENSSL_CNF > "${SH_PATH}/my_conf/openssl.cnf--${f_NAME}"
-    # keyUsage
+    # keyUsage（同时注入 v3_req 和 usr_cert 两个段）
     sed -i "/^# keyUsage = 用逗号分隔/a\keyUsage = ${MY_KEY_USAGE_S}"  "${SH_PATH}/my_conf/openssl.cnf--${f_NAME}"
-    # extendedKeyUsage
+    # extendedKeyUsage（同时注入 v3_req 和 usr_cert 两个段）
     if [ -n "${MY_EXTENDED_KEY_USAGE_S}" ]; then
         sed -i "/^# extendedKeyUsage = 用逗号分隔/a\extendedKeyUsage = ${MY_EXTENDED_KEY_USAGE_S}"  "${SH_PATH}/my_conf/openssl.cnf--${f_NAME}"
     fi
@@ -355,7 +355,8 @@ unstructuredName        = An optional company name
 #     为CA证书签名时（包含CA自签名）： CA:TRUE
 # This goes against PKIX guidelines but some CAs do it and some software
 # requires this to avoid interpreting an end user certificate as a CA.
-#basicConstraints = CA:FALSE     #--- 我不想启用它
+#basicConstraints = CA:FALSE     #--- 现在 usr_cert 用于终端证书签名，需要显式声明
+basicConstraints = CA:FALSE
 
 
 # 颁发典型客户端证书的秘钥用法：
@@ -364,6 +365,7 @@ unstructuredName        = An optional company name
 #     - keyEncipherment   秘钥加密
 # This is typical in keyUsage for a client certificate.
 #keyUsage = nonRepudiation,digitalSignature,keyEncipherment    #--- 这个在证书请求时已经设置，这里不需要再设置了吧？ 验证后，真的可以
+# keyUsage = 用逗号分隔
 
 
 # 秘钥增强用法：
@@ -371,6 +373,7 @@ unstructuredName        = An optional company name
 # TSA证书所必需
 # This is required for TSA certificates.
 #extendedKeyUsage = critical,timeStamping
+# extendedKeyUsage = 用逗号分隔
 
 
 ## Netscape证书类型，现在已经被【basicConstraints、keyUsage、extendedKeyUsage】替代
@@ -431,6 +434,10 @@ authorityKeyIdentifier = keyid,issuer
 #issuerAltName = issuer:copy
 
 
+# zhf_sy --- 添加备用名
+subjectAltName = @alt_names
+
+
 # CA相关Url
 #nsCaRevocationUrl = http://www.domain.dom/ca.crl.pem
 #nsBaseUrl         =
@@ -450,6 +457,9 @@ authorityKeyIdentifier = keyid,issuer
 # 为非CA证书签名时设置为：         CA:FALSE
 # 为CA证书签名时（包含CA自签名）： CA:TRUE
 basicConstraints = CA:FALSE
+
+
+subjectKeyIdentifier = hash
 
 
 # 秘钥用法：
@@ -546,12 +556,8 @@ keyUsage = nonRepudiation,keyCertSign,cRLSign
 ##nsCertType = sslCA,emailCA
 
 
-# PKIX另一个建议：在主题备用名称中包含电子邮件地址
-# Include email address in subject alt name: another PKIX recommendation
-#subjectAltName = email:copy
-# 拷贝发行人信息
-# Copy issuer details
-#issuerAltName = issuer:copy
+# zhf_sy --- CA证书也需要备用名称(SAN)
+subjectAltName = @alt_names
 
 
 # DER 十六进制编码扩展（供高手小心使用）

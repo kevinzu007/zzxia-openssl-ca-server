@@ -90,7 +90,7 @@ F_GEN_KEY_AND_CRT()
     openssl ca  -in "${SH_PATH}/from_user_csr/${NAME}.csr"  \
         -out "${SH_PATH}/to_user_crt/${NAME}.crt"  \
         -config "${SH_PATH}/my_conf/openssl.cnf--${NAME}"  \
-        -extensions v3_req  \
+        -extensions ${EXTENSIONS_SECTION}  \
         ${QUIET_OPTION} \
         2>&1  |  tee "${TEMP_CRT_LOG}"
     
@@ -227,6 +227,13 @@ if [ "${QUIET}" = 'yes' ]; then
     QUIET_OPTION="-batch"
 else
     QUIET_OPTION=""
+fi
+
+# 根据证书类型选择扩展段：CA/sub-CA 使用 v3_ca，其他使用 v3_req
+if [ "${CERT_USE_FOR}" = '1' -o "${CERT_USE_FOR}" = 'ca' ]; then
+    EXTENSIONS_SECTION='v3_ca'
+else
+    EXTENSIONS_SECTION='usr_cert'
 fi
 
 

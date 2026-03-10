@@ -126,7 +126,7 @@ else
         -signkey private/ca.pem.key  \
         -out ca.pem.crt  \
         -extfile "${SH_PATH}/my_conf/openssl.cnf--${NAME}"  \
-        -extensions v3_req
+        -extensions v3_ca
     echo "OK，CA私钥与证书已经生成："
     echo "    私钥：【${SH_PATH}/private/ca.pem.key】"
     echo "    证书：【${SH_PATH}/ca.pem.crt】"
