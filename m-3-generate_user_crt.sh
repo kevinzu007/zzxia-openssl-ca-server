@@ -131,15 +131,15 @@ F_CSR_TO_CNF()
     export CERT_DAYS=${CERT_DAYS:-365}           #--- 证书有效期
     #
     # 获取主要信息（安全方式，避免 eval 注入风险）
-    CSR_SUBJECT_LINE=$( cat "${TEMP_TEXT}" | grep 'Subject:' | sed 's/^ *//' )
+    CSR_SUBJECT=$( cat "${TEMP_TEXT}" | grep 'Subject:' | sed 's/^ *//' )
     #
-    countryName_default=$( echo "${CSR_SUBJECT_LINE}" | sed -n 's/.*C = \([^,/]*\).*/\1/p' )
-    stateOrProvinceName_default=$( echo "${CSR_SUBJECT_LINE}" | sed -n 's/.*ST = \([^,/]*\).*/\1/p' )
-    localityName_default=$( echo "${CSR_SUBJECT_LINE}" | sed -n 's/.*L = \([^,/]*\).*/\1/p' )
-    organizationName_default0=$( echo "${CSR_SUBJECT_LINE}" | sed -n 's/.*O = \([^,/]*\).*/\1/p' )
-    organizationalUnitName_default=$( echo "${CSR_SUBJECT_LINE}" | sed -n 's/.*OU = \([^,/]*\).*/\1/p' )
-    commonName_default=$( echo "${CSR_SUBJECT_LINE}" | sed -n 's/.*CN = \([^,/]*\).*/\1/p' )
-    emailAddress_default=$( echo "${CSR_SUBJECT_LINE}" | sed -n 's/.*emailAddress = \([^,/]*\).*/\1/p' )
+    countryName_default=$( echo "${CSR_SUBJECT}" | sed -n 's/.*C = \([^,/]*\).*/\1/p' )
+    stateOrProvinceName_default=$( echo "${CSR_SUBJECT}" | sed -n 's/.*ST = \([^,/]*\).*/\1/p' )
+    localityName_default=$( echo "${CSR_SUBJECT}" | sed -n 's/.*L = \([^,/]*\).*/\1/p' )
+    organizationName_default0=$( echo "${CSR_SUBJECT}" | sed -n 's/.*O = \([^,/]*\).*/\1/p' )
+    organizationalUnitName_default=$( echo "${CSR_SUBJECT}" | sed -n 's/.*OU = \([^,/]*\).*/\1/p' )
+    commonName_default=$( echo "${CSR_SUBJECT}" | sed -n 's/.*CN = \([^,/]*\).*/\1/p' )
+    emailAddress_default=$( echo "${CSR_SUBJECT}" | sed -n 's/.*emailAddress = \([^,/]*\).*/\1/p' )
     #
     # 获取备用名称信息
     CSR_SUBJECT_A=$( cat "${TEMP_TEXT}"  \
