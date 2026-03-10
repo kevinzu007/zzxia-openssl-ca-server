@@ -439,7 +439,44 @@ bash test_ca.sh
 
 
 
-## 7 参与贡献
+## 7 Openssl知识
+
+### 7.1 常用命令
+
+| 命令 | 用途 | 典型使用场景 |
+| ---- | ---- | ------------ |
+| `openssl genrsa` | 生成 RSA 私钥 | 为 CA 或用户生成私钥文件（`.key`） |
+| `openssl req` | 生成证书请求（CSR）或自签名证书 | 基于私钥生成 CSR 文件（`.csr`），交互式或静默式填写主题信息 |
+| `openssl ca` | 以 CA 身份签发/吊销证书 | CA 根据 CSR 签发证书，记录到 `index.txt` 数据库，管理序列号 |
+| `openssl x509` | 证书格式转换、查看、自签名 | CA 自签名证书生成（`-req -signkey`）、PEM↔DER 格式转换、查看证书详情 |
+| `openssl crl` | CRL 格式转换与查看 | PEM↔DER 格式转换、查看吊销列表详情 |
+| `openssl verify` | 验证证书链 | 验证用户证书是否由指定 CA 签发（`-CAfile`） |
+
+> **`openssl ca` vs `openssl x509` 签发区别**：
+> - `openssl ca`：完整的 CA 流程，会更新 `index.txt` 数据库和 `serial` 序列号，支持吊销管理
+> - `openssl x509 -req -signkey`：简单的自签名，不经过 CA 数据库，仅用于根 CA 自签名证书（两步：先 `req` 生成 CSR，再 `x509` 自签名）
+> - `openssl req -new -x509`：一步完成自签名证书生成（省去 CSR 中间步骤），效果等同上面两步，但更简洁
+
+### 7.2 证书扩展段（Extensions Section）
+
+本项目的 `openssl.cnf` 中定义了以下扩展段，用于不同类型的证书签发：
+
+| 扩展段 | 用途 | basicConstraints | subjectKeyIdentifier | authorityKeyIdentifier | subjectAltName |
+| ------ | ---- | --------------- | -------------------- | ---------------------- | -------------- |
+| `v3_req` | **CSR 生成**（`openssl req` 的 `req_extensions`） | `CA:FALSE` | ✅ `hash` | ❌ 不可包含（CSR 阶段无签发者） | ✅ `@alt_names` |
+| `usr_cert` | **终端证书签发**（`openssl ca` 的 `-extensions`） | `CA:FALSE` | ✅ `hash` | ✅ `keyid,issuer` | ✅ `@alt_names` |
+| `v3_ca` | **CA/sub-CA 证书签发**（`openssl ca` 或 `openssl x509` 的 `-extensions`） | `CA:true` | ✅ `hash` | ✅ `keyid:always,issuer`（严格模式） | ✅ `@alt_names` |
+
+> **为什么 `v3_req` 不能包含 `authorityKeyIdentifier`？**
+> 因为 `v3_req` 同时被 `openssl req` 用作 `req_extensions`。生成 CSR 时还没有签发者证书，如果包含 `authorityKeyIdentifier` 会导致 OpenSSL 报错。
+>
+> **`keyid` vs `keyid:always` 的区别：**
+> - `keyid`：尝试从签发者证书复制 SKI，失败时静默跳过（适合终端证书）
+> - `keyid:always`：失败时报错，确保证书链完整性（适合 CA 证书）
+
+
+
+## 8 参与贡献
 
 1.  Fork 本仓库
 2.  新建 Feat_xxx 分支
