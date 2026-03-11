@@ -309,10 +309,46 @@ T_3IN1_GENERATE()
 }
 
 
-# 测试8：吊销证书
+# 测试8：续签用户证书
+T_RENEW_USER_CRT()
+{
+    echo -e "\n${YELLOW}=== 测试8：续签用户证书 ===${NC}"
+
+    cd "${TEST_WORK_DIR}"
+
+    # 记录旧证书的序列号用于对比
+    local OLD_SERIAL=""
+    if [ -f "${TEST_WORK_DIR}/to_user_crt/test.lan.crt" ]; then
+        OLD_SERIAL=$(openssl x509 -in "${TEST_WORK_DIR}/to_user_crt/test.lan.crt" -noout -serial 2>/dev/null)
+    fi
+    F_ASSERT "续签前旧证书存在" $([ -n "${OLD_SERIAL}" ] && echo 0 || echo 1)
+
+    # 使用 --no-revoke 续签（免交互）
+    bash ./m-x-renew_user_crt.sh -n test.lan -q --no-revoke > /dev/null 2>&1
+    F_ASSERT "续签执行成功" $?
+
+    F_ASSERT_FILE_EXISTS "续签：新证书已生成" "${TEST_WORK_DIR}/to_user_crt/test.lan.crt"
+
+    # 验证旧证书备份文件存在
+    local BAK_COUNT=$(ls "${TEST_WORK_DIR}/to_user_crt/test.lan.crt."* 2>/dev/null | wc -l)
+    F_ASSERT "续签：旧证书备份文件存在" $([ "${BAK_COUNT}" -ge 1 ] && echo 0 || echo 1)
+
+    # 验证新证书序列号与旧证书不同
+    if [ -f "${TEST_WORK_DIR}/to_user_crt/test.lan.crt" ]; then
+        local NEW_SERIAL=$(openssl x509 -in "${TEST_WORK_DIR}/to_user_crt/test.lan.crt" -noout -serial 2>/dev/null)
+        F_ASSERT "续签：新证书序列号不同" $([ "${NEW_SERIAL}" != "${OLD_SERIAL}" ] && echo 0 || echo 1)
+
+        # 验证新证书通过 CA 验证
+        openssl verify -CAfile "${TEST_WORK_DIR}/ca.pem.crt" "${TEST_WORK_DIR}/to_user_crt/test.lan.crt" > /dev/null 2>&1
+        F_ASSERT "续签：新证书通过 CA 验证" $?
+    fi
+}
+
+
+# 测试9：吊销证书
 T_REVOKE_CRT()
 {
-    echo -e "\n${YELLOW}=== 测试8：吊销用户证书 ===${NC}"
+    echo -e "\n${YELLOW}=== 测试9：吊销用户证书 ===${NC}"
 
     cd "${TEST_WORK_DIR}"
     bash ./m-x-revoke_user_crt.sh -n test.lan > /dev/null 2>&1
@@ -326,10 +362,10 @@ T_REVOKE_CRT()
 }
 
 
-# 测试9：生成 CRL
+# 测试10：生成 CRL
 T_GENERATE_CRL()
 {
-    echo -e "\n${YELLOW}=== 测试9：生成 CRL 吊销列表 ===${NC}"
+    echo -e "\n${YELLOW}=== 测试10：生成 CRL 吊销列表 ===${NC}"
 
     cd "${TEST_WORK_DIR}"
     bash ./m-x-generate_CA_crl.sh -y > /dev/null 2>&1
@@ -371,6 +407,7 @@ T_GENERATE_USER_KEY
 T_GENERATE_USER_CSR
 T_GENERATE_USER_CRT
 T_3IN1_GENERATE
+T_RENEW_USER_CRT
 T_REVOKE_CRT
 T_GENERATE_CRL
 

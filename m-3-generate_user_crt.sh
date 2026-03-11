@@ -12,8 +12,17 @@
 SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd "${SH_PATH}"
 
-# 本地env
-GAN_WHAT_FUCK='颁发或更新用户证书'
+# 根据调用脚本名称区分运行模式
+case "${0##*/}" in
+    m-x-renew*)
+        RUN_MODE='renew'
+        GAN_WHAT_FUCK='续签用户证书'
+        ;;
+    *)
+        RUN_MODE='generate'
+        GAN_WHAT_FUCK='颁发用户证书'
+        ;;
+esac
 NEED_PRIVILEGES='ADMIN'
 
 # 加载公共函数
@@ -22,8 +31,19 @@ NEED_PRIVILEGES='ADMIN'
 
 F_HELP()
 {
+    if [ "${RUN_MODE}" = 'renew' ]; then
+        local HELP_PURPOSE='用于续签已有的用户证书'
+        local HELP_NOTE='续签会生成新证书，旧证书默认不会被自动吊销'
+        local HELP_RENEW_PARAMS="
+        --revoke                            续签后自动吊销旧证书（免交互）
+        --no-revoke                         续签后不吊销旧证书（免交互）"
+    else
+        local HELP_PURPOSE='用于颁发用户证书'
+        local HELP_NOTE=''
+        local HELP_RENEW_PARAMS=''
+    fi
     echo "
-    用途：用于颁发或更新用户证书
+    用途：${HELP_PURPOSE}
     特征码：
         ${GAN_WHAT_FUCK:-'未命名'}
     权限要求：
@@ -32,6 +52,7 @@ F_HELP()
         ./function.sh
         ./my_conf/env.sh--\${NAME}      #--- 此文件须自行基于【./my_conf/env.sh--model】创建，当使用外部证书请求文件时，无须此配置文件
     注意：
+        ${HELP_NOTE}
     用法：
         $0  -h|--help
         $0  {-n|--name <证书相关名称>}  [{-c|--cert-bits <证书长度>}]  [{-d|--days <证书有效天数>}]  [{-f|--csr-file <证书请求文件>}]  [-q|--quiet]
@@ -44,7 +65,7 @@ $(F_HELP_PARAM_SPEC)
         -f|--csr-file <证书请求文件>        指定外部用户证书请求文件。一般只有在用户使用其他工具生成证书请求时使用此项
         -c|--cert-bits <证书长度>           证书长度，默认2048
         -d|--days <证书有效天数>            证书有效期，默认365天
-        -q|--quiet                          静默方式运行
+        -q|--quiet                          静默方式运行${HELP_RENEW_PARAMS}
     示例:
         $0  -n test.com
         #
@@ -266,7 +287,7 @@ F_GEN_CRT()
 
 
 
-TEMP=`getopt -o hc:d:n:f:q  -l help,cert-bits:,days:,name:,csr-file:,quiet -- "$@"`
+TEMP=`getopt -o hc:d:n:f:q  -l help,cert-bits:,days:,name:,csr-file:,quiet,revoke,no-revoke -- "$@"`
 if [ $? != 0 ]; then
     echo -e "\n峰哥说：参数不合法，请查看帮助【$0 --help】\n"
     exit 1
@@ -316,6 +337,14 @@ do
             QUIET='yes'
             shift
             ;;
+        --revoke)
+            REVOKE_OLD='yes'
+            shift
+            ;;
+        --no-revoke)
+            REVOKE_OLD='no'
+            shift
+            ;;
         --)
             shift
             break
@@ -363,6 +392,53 @@ else
     EXTENSIONS_SECTION='usr_cert'
 fi
 
+
+# 续签模式：检测旧证书并处理吊销
+F_REVOKE_OLD_CRT()
+{
+    echo "正在吊销旧证书..."
+    local CA_NAME='CA'
+    if [ ! -f "${SH_PATH}/my_conf/openssl.cnf--${CA_NAME}" ]; then
+        echo -e "\n警告：CA 配置文件【${SH_PATH}/my_conf/openssl.cnf--${CA_NAME}】未找到，无法吊销旧证书"
+        return 1
+    fi
+    openssl ca -revoke "${OLD_CRT_BAK}" \
+        -config "${SH_PATH}/my_conf/openssl.cnf--${CA_NAME}" 2>&1
+    if [ $? -eq 0 ]; then
+        echo -e "\n旧证书已吊销！"
+        echo "注意：请记得运行 ./m-x-generate_CA_crl.sh -y 更新 CRL 吊销列表"
+    else
+        echo -e "\n警告：旧证书吊销失败，请手动处理"
+    fi
+}
+
+if [ "${RUN_MODE}" = 'renew' ]; then
+    OLD_CRT="${SH_PATH}/to_user_crt/${NAME}.crt"
+    if [ -f "${OLD_CRT}" ]; then
+        echo -e "\n发现已有证书【${NAME}】："
+        openssl x509 -in "${OLD_CRT}" -noout \
+            -subject -issuer -dates 2>/dev/null | sed 's/^/    /'
+        echo ""
+        # 备份旧证书（使用时间戳）
+        OLD_CRT_BAK="${OLD_CRT}.$(date +%Y%m%d%H%M%S)"
+        cp "${OLD_CRT}" "${OLD_CRT_BAK}"
+        # 决定是否吊销
+        if [ "${REVOKE_OLD}" = 'yes' ]; then
+            F_REVOKE_OLD_CRT
+        elif [ "${REVOKE_OLD}" = 'no' ]; then
+            echo "已跳过旧证书吊销（--no-revoke）"
+        else
+            read -p "是否吊销旧证书？[y/N]: " ANSWER
+            if [ "${ANSWER}" = 'y' -o "${ANSWER}" = 'Y' ]; then
+                F_REVOKE_OLD_CRT
+            else
+                echo "已跳过旧证书吊销"
+            fi
+        fi
+    else
+        echo -e "\n提示：未找到名为【${NAME}】的已有证书，当前操作等同于首次颁发\n"
+    fi
+fi
 
 
 #
