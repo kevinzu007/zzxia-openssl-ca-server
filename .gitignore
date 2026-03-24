@@ -13,17 +13,7 @@
 .nfs*
 
 # CA 运行时生成的文件
-private/
-newcerts/
-certs/
-crl/
-from_user_csr/
-to_user_crt/
-ca.pem.*
-ca.der.*
-index.txt*
-serial*
-crlnumber*
+CA_data/
 my_conf/openssl.cnf--*
 my_conf/env.sh--*
 !my_conf/env.sh--*.sample

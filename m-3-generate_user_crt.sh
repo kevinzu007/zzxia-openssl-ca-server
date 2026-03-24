@@ -258,14 +258,14 @@ F_GEN_CRT()
     #       CA信息从从openssl.cnf文件中获取
     #       CA/sub-CA证书使用 v3_ca 扩展段，其他证书使用 v3_req 扩展段
     openssl ca  -in "${F_CSR_FILE}"  \
-        -out "${SH_PATH}/to_user_crt/${NAME}.crt"  \
+        -out "${CA_DATA_DIR}/to_user_crt/${NAME}.crt"  \
         -extensions ${EXTENSIONS_SECTION}  \
         -config "${SH_PATH}/my_conf/openssl.cnf--${NAME}"  \
         ${QUIET_OPTION} \
         2>&1  |  tee "${TEMP_LOG}"
     
     # 成功？
-    if [ ! -f "${SH_PATH}/to_user_crt/${NAME}.crt" ]; then
+    if [ ! -f "${CA_DATA_DIR}/to_user_crt/${NAME}.crt" ]; then
         echo -e "\n峰哥说：证书生成失败，请检查错误信息\n"
         return 1
     fi
@@ -277,10 +277,10 @@ F_GEN_CRT()
     
     echo -e "\n证书签名详情如下："
     echo '------------------------------------------------------------'
-    openssl x509  -in "${SH_PATH}/to_user_crt/${NAME}.crt"  -noout -text
+    openssl x509  -in "${CA_DATA_DIR}/to_user_crt/${NAME}.crt"  -noout -text
     echo '------------------------------------------------------------'
     echo -e "\n用户证书文件路径："
-    echo "    证书：【${SH_PATH}/to_user_crt/${NAME}.crt】"
+    echo "    证书：【${CA_DATA_DIR}/to_user_crt/${NAME}.crt】"
     return 0
 }
 
@@ -413,7 +413,7 @@ F_REVOKE_OLD_CRT()
 }
 
 if [ "${RUN_MODE}" = 'renew' ]; then
-    OLD_CRT="${SH_PATH}/to_user_crt/${NAME}.crt"
+    OLD_CRT="${CA_DATA_DIR}/to_user_crt/${NAME}.crt"
     if [ -f "${OLD_CRT}" ]; then
         echo -e "\n发现已有证书【${NAME}】："
         openssl x509 -in "${OLD_CRT}" -noout \
@@ -446,14 +446,14 @@ if [[ -z "${CSR_FILE}" ]]; then
     ## 默认：使用先前本程序为用户生成的csr（未提供--csr-file参数时）
     # 所有所有证书信息直接从本地cnf文件中获取，用cnf文件生成证书
     # csr
-    if [ ! -f "${SH_PATH}/from_user_csr/${NAME}.csr" ]; then
-        echo -e "\n峰哥说：证书请求文件【${SH_PATH}/from_user_csr/${NAME}.csr】未找到！\n"
+    if [ ! -f "${CA_DATA_DIR}/from_user_csr/${NAME}.csr" ]; then
+        echo -e "\n峰哥说：证书请求文件【${CA_DATA_DIR}/from_user_csr/${NAME}.csr】未找到！\n"
         exit 1
     fi
     # cnf
     # 现有的
     # crt
-    F_GEN_CRT  "${SH_PATH}/from_user_csr/${NAME}.csr"
+    F_GEN_CRT  "${CA_DATA_DIR}/from_user_csr/${NAME}.csr"
 else
     ## 使用用其他工具生成的csr
     # 所有证书信息直接从用户csr中获取，并生成cnf文件，用cnf文件生成证书

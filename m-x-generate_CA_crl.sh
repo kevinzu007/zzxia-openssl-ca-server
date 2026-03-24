@@ -67,8 +67,8 @@ else
 fi
 
 # check crlnumber
-if [ ! -f "${SH_PATH}/crlnumber" ]; then
-     echo -e "\n峰哥说：文件【${SH_PATH}/crlnumber】未找到，请先运行【./0-init_ca.sh】进行初始化！\n"
+if [ ! -f "${CA_DATA_DIR}/crlnumber" ]; then
+     echo -e "\n峰哥说：文件【${CA_DATA_DIR}/crlnumber】未找到，请先运行【./0-init_ca.sh】进行初始化！\n"
      exit 1
 fi
 
@@ -83,19 +83,19 @@ F_GENERATE_OPENSSL_CNF "${NAME}"
 
 # CRL
 echo -e "\n正在生成CRL吊销列表..."
-openssl ca -gencrl -out "${SH_PATH}/crl/ca.crl.pem" -config "${SH_PATH}/my_conf/openssl.cnf--${NAME}"
+openssl ca -gencrl -out "${CA_DATA_DIR}/crl/ca.crl.pem" -config "${SH_PATH}/my_conf/openssl.cnf--${NAME}"
 
 if [ $? -eq 0 ]; then
     # DER format
-    openssl crl -inform PEM -outform DER -in "${SH_PATH}/crl/ca.crl.pem" -out "${SH_PATH}/crl/ca.crl.der"
+    openssl crl -inform PEM -outform DER -in "${CA_DATA_DIR}/crl/ca.crl.pem" -out "${CA_DATA_DIR}/crl/ca.crl.der"
     
     echo -e "\n成功：CRL吊销列表已更新！"
-    echo "    PEM格式：【${SH_PATH}/crl/ca.crl.pem】"
-    echo "    DER格式：【${SH_PATH}/crl/ca.crl.der】"
+    echo "    PEM格式：【${CA_DATA_DIR}/crl/ca.crl.pem】"
+    echo "    DER格式：【${CA_DATA_DIR}/crl/ca.crl.der】"
     
     # Show info
     echo -e "\nCRL详情："
-    openssl crl -in "${SH_PATH}/crl/ca.crl.pem" -noout -text
+    openssl crl -in "${CA_DATA_DIR}/crl/ca.crl.pem" -noout -text
 else
     echo -e "\n失败：CRL生成失败，请检查错误信息。"
     exit 1

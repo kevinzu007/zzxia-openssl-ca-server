@@ -57,10 +57,10 @@ $(F_HELP_PARAM_SPEC)
 F_GEN_KEY()
 {
     # key
-    openssl genrsa -out "${SH_PATH}/from_user_csr/${NAME}.key"  ${PRIVATEKEY_BITS}
-    chmod 600 "${SH_PATH}/from_user_csr/${NAME}.key"
+    openssl genrsa -out "${CA_DATA_DIR}/from_user_csr/${NAME}.key"  ${PRIVATEKEY_BITS}
+    chmod 600 "${CA_DATA_DIR}/from_user_csr/${NAME}.key"
     echo -e "\n私钥文件路径："
-    echo "    私钥：【${SH_PATH}/from_user_csr/${NAME}.key】"
+    echo "    私钥：【${CA_DATA_DIR}/from_user_csr/${NAME}.key】"
 }
 
 
@@ -139,13 +139,13 @@ QUIET=${QUIET:-'no'}
 
 
 #
-if [ -f "${SH_PATH}/from_user_csr/${NAME}.key"  -a  "${QUIET}" != 'yes' ]; then
-    echo "私钥文件【${SH_PATH}/from_user_csr/${NAME}.key】已存在，请确认是否需要重建"
+if [ -f "${CA_DATA_DIR}/from_user_csr/${NAME}.key"  -a  "${QUIET}" != 'yes' ]; then
+    echo "私钥文件【${CA_DATA_DIR}/from_user_csr/${NAME}.key】已存在，请确认是否需要重建"
     read -p "需要重建吗？(Y|N)" ACK
     if [ "x${ACK}" = "xY" ]; then
         F_GEN_KEY
     else
-        echo -e "\nOK，使用现有私钥【${SH_PATH}/from_user_csr/${NAME}.key】！\n"
+        echo -e "\nOK，使用现有私钥【${CA_DATA_DIR}/from_user_csr/${NAME}.key】！\n"
     fi
 else
     F_GEN_KEY

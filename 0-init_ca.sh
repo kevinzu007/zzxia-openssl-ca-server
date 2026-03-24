@@ -65,39 +65,41 @@ esac
 
 
 # rm
-rm -f  index.txt*
-rm -f  serial*
-rm -f  crlnumber*
+rm -f  "${CA_DATA_DIR}"/index.txt*
+rm -f  "${CA_DATA_DIR}"/serial*
+rm -f  "${CA_DATA_DIR}"/crlnumber*
 
-rm -f  ca.pem.*
-rm -f  ca.der.*
-rm -rf  private/*
+rm -f  "${CA_DATA_DIR}"/ca.pem.*
+rm -f  "${CA_DATA_DIR}"/ca.der.*
+rm -rf  "${CA_DATA_DIR}"/private/*
 
-rm -rf  newcerts/*
-rm -rf  certs/*
-rm -rf  crl/*
+rm -rf  "${CA_DATA_DIR}"/newcerts/*
+rm -rf  "${CA_DATA_DIR}"/certs/*
+rm -rf  "${CA_DATA_DIR}"/crl/*
 
-rm -rf  from_user_csr/*
-rm -rf  to_user_crt/*
+rm -rf  "${CA_DATA_DIR}"/from_user_csr/*
+rm -rf  "${CA_DATA_DIR}"/to_user_crt/*
 
 find  my_conf/*  ! -iname  env.sh* -exec rm -f {} \;
 
 
 # create dir
-mkdir -p private
-chmod 700 private
+mkdir -p "${CA_DATA_DIR}"
 
-mkdir -p from_user_csr
-chmod 700 from_user_csr
+mkdir -p "${CA_DATA_DIR}"/private
+chmod 700 "${CA_DATA_DIR}"/private
 
-mkdir -p newcerts certs crl to_user_crt
-chmod 755 newcerts certs crl to_user_crt
+mkdir -p "${CA_DATA_DIR}"/from_user_csr
+chmod 700 "${CA_DATA_DIR}"/from_user_csr
+
+mkdir -p "${CA_DATA_DIR}"/newcerts "${CA_DATA_DIR}"/certs "${CA_DATA_DIR}"/crl "${CA_DATA_DIR}"/to_user_crt
+chmod 755 "${CA_DATA_DIR}"/newcerts "${CA_DATA_DIR}"/certs "${CA_DATA_DIR}"/crl "${CA_DATA_DIR}"/to_user_crt
 
 
 # create file
-> index.txt
-echo "01"  > serial
-echo "01"  > crlnumber
+> "${CA_DATA_DIR}"/index.txt
+echo "01"  > "${CA_DATA_DIR}"/serial
+echo "01"  > "${CA_DATA_DIR}"/crlnumber
 
 
 echo "OK，初始化已完成！"

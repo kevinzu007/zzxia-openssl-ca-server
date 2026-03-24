@@ -60,22 +60,22 @@ $(F_HELP_PARAM_SPEC)
 F_GEN_KEY_AND_CRT()
 {
     # key
-    if [ -f "${SH_PATH}/from_user_csr/${NAME}.key" ]; then
-        echo -e "\n注意：私钥【${SH_PATH}/from_user_csr/${NAME}.key】已存在，将使用此私钥\n"
+    if [ -f "${CA_DATA_DIR}/from_user_csr/${NAME}.key" ]; then
+        echo -e "\n注意：私钥【${CA_DATA_DIR}/from_user_csr/${NAME}.key】已存在，将使用此私钥\n"
     else
-        openssl genrsa -out "${SH_PATH}/from_user_csr/${NAME}.key"  ${PRIVATEKEY_BITS}
-        chmod 600 "${SH_PATH}/from_user_csr/${NAME}.key"
+        openssl genrsa -out "${CA_DATA_DIR}/from_user_csr/${NAME}.key"  ${PRIVATEKEY_BITS}
+        chmod 600 "${CA_DATA_DIR}/from_user_csr/${NAME}.key"
     fi
     
     # csr
-    openssl req -new  -key "${SH_PATH}/from_user_csr/${NAME}.key"  \
-        -out "${SH_PATH}/from_user_csr/${NAME}.csr"  \
+    openssl req -new  -key "${CA_DATA_DIR}/from_user_csr/${NAME}.key"  \
+        -out "${CA_DATA_DIR}/from_user_csr/${NAME}.csr"  \
         -config  "${SH_PATH}/my_conf/openssl.cnf--${NAME}"  \
         ${QUIET_OPTION} \
         2>&1  |  tee "${TEMP_CSR_LOG}"
     
     # 检查CSR是否生成成功
-    if [ ! -f "${SH_PATH}/from_user_csr/${NAME}.csr" ]; then
+    if [ ! -f "${CA_DATA_DIR}/from_user_csr/${NAME}.csr" ]; then
         echo -e "\n峰哥说：证书请求生成失败，请检查错误信息\n"
         return 1
     fi
@@ -83,19 +83,19 @@ F_GEN_KEY_AND_CRT()
     # 查看csr信息
     echo -e "\n证书请求信息如下："
     echo '------------------------------------------------------------'
-    openssl req  -in "${SH_PATH}/from_user_csr/${NAME}.csr"  -noout -text
+    openssl req  -in "${CA_DATA_DIR}/from_user_csr/${NAME}.csr"  -noout -text
     echo '------------------------------------------------------------'
     
     # crt
-    openssl ca  -in "${SH_PATH}/from_user_csr/${NAME}.csr"  \
-        -out "${SH_PATH}/to_user_crt/${NAME}.crt"  \
+    openssl ca  -in "${CA_DATA_DIR}/from_user_csr/${NAME}.csr"  \
+        -out "${CA_DATA_DIR}/to_user_crt/${NAME}.crt"  \
         -config "${SH_PATH}/my_conf/openssl.cnf--${NAME}"  \
         -extensions ${EXTENSIONS_SECTION}  \
         ${QUIET_OPTION} \
         2>&1  |  tee "${TEMP_CRT_LOG}"
     
     # 检查证书是否生成成功
-    if [ ! -f "${SH_PATH}/to_user_crt/${NAME}.crt" ]; then
+    if [ ! -f "${CA_DATA_DIR}/to_user_crt/${NAME}.crt" ]; then
         echo -e "\n峰哥说：证书生成失败，请检查错误信息\n"
         return 1
     fi
@@ -108,11 +108,11 @@ F_GEN_KEY_AND_CRT()
     # 查看crt信息
     echo -e "\n证书签名详情如下："
     echo '------------------------------------------------------------'
-    openssl x509  -in "${SH_PATH}/to_user_crt/${NAME}.crt"  -noout -text
+    openssl x509  -in "${CA_DATA_DIR}/to_user_crt/${NAME}.crt"  -noout -text
     echo '------------------------------------------------------------'
     echo -e "\n秘钥、证书文件路径："
-    echo "    私钥：【${SH_PATH}/from_user_csr/${NAME}.key】"
-    echo "    证书：【${SH_PATH}/to_user_crt/${NAME}.crt】"
+    echo "    私钥：【${CA_DATA_DIR}/from_user_csr/${NAME}.key】"
+    echo "    证书：【${CA_DATA_DIR}/to_user_crt/${NAME}.crt】"
     return 0
 }
 

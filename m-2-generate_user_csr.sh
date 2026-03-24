@@ -53,14 +53,14 @@ $(F_HELP_PARAM_SPEC)
 F_GEN_CSR()
 {
     # csr
-    openssl req -new  -key "${SH_PATH}/from_user_csr/${NAME}.key"  \
-        -out "${SH_PATH}/from_user_csr/${NAME}.csr"  \
+    openssl req -new  -key "${CA_DATA_DIR}/from_user_csr/${NAME}.key"  \
+        -out "${CA_DATA_DIR}/from_user_csr/${NAME}.csr"  \
         -config  "${SH_PATH}/my_conf/openssl.cnf--${NAME}"  \
         ${QUIET_OPTION} \
         2>&1  | tee "${TEMP_LOG}"
     
     # 检查是否成功
-    if [ ! -f "${SH_PATH}/from_user_csr/${NAME}.csr" ]; then
+    if [ ! -f "${CA_DATA_DIR}/from_user_csr/${NAME}.csr" ]; then
         echo -e "\n峰哥说：证书请求生成失败，请检查错误信息\n"
         return 1
     fi
@@ -68,11 +68,11 @@ F_GEN_CSR()
     # 查看csr信息
     echo -e "\n证书请求信息如下："
     echo '------------------------------------------------------------'
-    openssl req  -in "${SH_PATH}/from_user_csr/${NAME}.csr"  -noout -text
+    openssl req  -in "${CA_DATA_DIR}/from_user_csr/${NAME}.csr"  -noout -text
     echo '------------------------------------------------------------'
     echo -e "\n私钥、证书请求文件路径："
-    echo "    私钥：【${SH_PATH}/from_user_csr/${NAME}.key】"
-    echo "    证书请求：【${SH_PATH}/from_user_csr/${NAME}.csr】"
+    echo "    私钥：【${CA_DATA_DIR}/from_user_csr/${NAME}.key】"
+    echo "    证书请求：【${CA_DATA_DIR}/from_user_csr/${NAME}.csr】"
     return 0
 }
 
@@ -167,8 +167,8 @@ F_GENERATE_OPENSSL_CNF "${NAME}"
 #fi
 
 # key
-if [ ! -f "${SH_PATH}/from_user_csr/${NAME}.key" ]; then
-     echo -e "\n峰哥说：私钥文件【${SH_PATH}/from_user_csr/${NAME}.key】未找到，请检查！\n"
+if [ ! -f "${CA_DATA_DIR}/from_user_csr/${NAME}.key" ]; then
+     echo -e "\n峰哥说：私钥文件【${CA_DATA_DIR}/from_user_csr/${NAME}.key】未找到，请检查！\n"
      exit 1
 fi
 

@@ -123,15 +123,18 @@ $ tree
 │   ├── env.sh--CA.sample                 # CA配置示例
 │   ├── env.sh--model                     # 用户证书配置模板
 │   └── env.sh--test.lan                  # 用户证书配置示例
-├── private/                              # CA私钥目录（权限700）
-├── from_user_csr/                        # 用户私钥与CSR存放目录
-├── to_user_crt/                          # 颁发的用户证书存放目录
-├── newcerts/                             # CA颁发证书备份
-├── certs/                                # 证书存放目录
-├── crl/                                  # CRL存放目录
-├── index.txt                             # CA证书数据库
-├── serial                                # 证书序列号（初始值01）
-└── crlnumber                             # CRL序列号（初始值01）
+└── CA_data/                              # CA运行时数据目录（初始化后生成）
+    ├── private/                          # CA私钥目录（权限700）
+    ├── from_user_csr/                    # 用户私钥与CSR存放目录
+    ├── to_user_crt/                      # 颁发的用户证书存放目录
+    ├── newcerts/                         # CA颁发证书备份
+    ├── certs/                            # 证书存放目录
+    ├── crl/                              # CRL存放目录
+    ├── ca.pem.crt                        # CA证书（PEM格式）
+    ├── ca.der.crt                        # CA证书（DER格式）
+    ├── index.txt                         # CA证书数据库
+    ├── serial                            # 证书序列号（初始值01）
+    └── crlnumber                         # CRL序列号（初始值01）
 ```
 
 

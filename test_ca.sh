@@ -162,18 +162,18 @@ T_INIT_CA()
     cd "${TEST_WORK_DIR}"
     bash ./0-init_ca.sh -y <<< "y" > /dev/null 2>&1
 
-    F_ASSERT_FILE_EXISTS "index.txt 已创建" "${TEST_WORK_DIR}/index.txt"
-    F_ASSERT_FILE_EXISTS "serial 已创建" "${TEST_WORK_DIR}/serial"
-    F_ASSERT_FILE_EXISTS "crlnumber 已创建" "${TEST_WORK_DIR}/crlnumber"
-    F_ASSERT_DIR_EXISTS  "private/ 目录已创建" "${TEST_WORK_DIR}/private"
-    F_ASSERT_DIR_EXISTS  "newcerts/ 目录已创建" "${TEST_WORK_DIR}/newcerts"
-    F_ASSERT_DIR_EXISTS  "certs/ 目录已创建" "${TEST_WORK_DIR}/certs"
-    F_ASSERT_DIR_EXISTS  "crl/ 目录已创建" "${TEST_WORK_DIR}/crl"
-    F_ASSERT_DIR_EXISTS  "from_user_csr/ 目录已创建" "${TEST_WORK_DIR}/from_user_csr"
-    F_ASSERT_DIR_EXISTS  "to_user_crt/ 目录已创建" "${TEST_WORK_DIR}/to_user_crt"
+    F_ASSERT_FILE_EXISTS "index.txt 已创建" "${TEST_WORK_DIR}/CA_data/index.txt"
+    F_ASSERT_FILE_EXISTS "serial 已创建" "${TEST_WORK_DIR}/CA_data/serial"
+    F_ASSERT_FILE_EXISTS "crlnumber 已创建" "${TEST_WORK_DIR}/CA_data/crlnumber"
+    F_ASSERT_DIR_EXISTS  "private/ 目录已创建" "${TEST_WORK_DIR}/CA_data/private"
+    F_ASSERT_DIR_EXISTS  "newcerts/ 目录已创建" "${TEST_WORK_DIR}/CA_data/newcerts"
+    F_ASSERT_DIR_EXISTS  "certs/ 目录已创建" "${TEST_WORK_DIR}/CA_data/certs"
+    F_ASSERT_DIR_EXISTS  "crl/ 目录已创建" "${TEST_WORK_DIR}/CA_data/crl"
+    F_ASSERT_DIR_EXISTS  "from_user_csr/ 目录已创建" "${TEST_WORK_DIR}/CA_data/from_user_csr"
+    F_ASSERT_DIR_EXISTS  "to_user_crt/ 目录已创建" "${TEST_WORK_DIR}/CA_data/to_user_crt"
 
     # 检查 serial 初始值
-    local SERIAL_VAL=$(cat "${TEST_WORK_DIR}/serial" 2>/dev/null)
+    local SERIAL_VAL=$(cat "${TEST_WORK_DIR}/CA_data/serial" 2>/dev/null)
     F_ASSERT "serial 初始值为 01" $([ "${SERIAL_VAL}" = "01" ] && echo 0 || echo 1)
 }
 
@@ -190,30 +190,30 @@ T_GENERATE_CA()
     #   yes "" 生成无限空行给 openssl req 以接受所有默认值
     (echo 'y'; yes '') | bash ./1-generate_CA_key_and_crt.sh -y > "${CA_LOG}" 2>&1
 
-    F_ASSERT_FILE_EXISTS "CA 私钥已生成" "${TEST_WORK_DIR}/private/ca.pem.key"
-    F_ASSERT_FILE_EXISTS "CA PEM 证书已生成" "${TEST_WORK_DIR}/ca.pem.crt"
-    F_ASSERT_FILE_EXISTS "CA DER 证书已生成" "${TEST_WORK_DIR}/ca.der.crt"
+    F_ASSERT_FILE_EXISTS "CA 私钥已生成" "${TEST_WORK_DIR}/CA_data/private/ca.pem.key"
+    F_ASSERT_FILE_EXISTS "CA PEM 证书已生成" "${TEST_WORK_DIR}/CA_data/ca.pem.crt"
+    F_ASSERT_FILE_EXISTS "CA DER 证书已生成" "${TEST_WORK_DIR}/CA_data/ca.der.crt"
 
     # 如果证书生成失败，输出错误日志帮助定位问题
-    if [ ! -f "${TEST_WORK_DIR}/ca.pem.crt" ]; then
+    if [ ! -f "${TEST_WORK_DIR}/CA_data/ca.pem.crt" ]; then
         echo -e "  ${RED}[DEBUG] CA 证书生成日志：${NC}"
         tail -20 "${CA_LOG}" | sed 's/^/    /'
     fi
     rm -f "${CA_LOG}"
 
     # 验证证书是否有效
-    if [ -f "${TEST_WORK_DIR}/ca.pem.crt" ]; then
-        openssl x509 -in "${TEST_WORK_DIR}/ca.pem.crt" -noout -text > /dev/null 2>&1
+    if [ -f "${TEST_WORK_DIR}/CA_data/ca.pem.crt" ]; then
+        openssl x509 -in "${TEST_WORK_DIR}/CA_data/ca.pem.crt" -noout -text > /dev/null 2>&1
         F_ASSERT "CA 证书格式有效" $?
 
         # 验证是 CA 证书
-        local IS_CA=$(openssl x509 -in "${TEST_WORK_DIR}/ca.pem.crt" -noout -text 2>/dev/null | grep "CA:TRUE")
+        local IS_CA=$(openssl x509 -in "${TEST_WORK_DIR}/CA_data/ca.pem.crt" -noout -text 2>/dev/null | grep "CA:TRUE")
         F_ASSERT "CA 证书含 CA:TRUE 标识" $([ -n "${IS_CA}" ] && echo 0 || echo 1)
     fi
 
     # 验证私钥权限
-    if [ -f "${TEST_WORK_DIR}/private/ca.pem.key" ]; then
-        local KEY_PERM=$(stat -c "%a" "${TEST_WORK_DIR}/private/ca.pem.key" 2>/dev/null)
+    if [ -f "${TEST_WORK_DIR}/CA_data/private/ca.pem.key" ]; then
+        local KEY_PERM=$(stat -c "%a" "${TEST_WORK_DIR}/CA_data/private/ca.pem.key" 2>/dev/null)
         F_ASSERT "CA 私钥权限为 600" $([ "${KEY_PERM}" = "600" ] && echo 0 || echo 1)
     fi
 }
@@ -227,15 +227,15 @@ T_GENERATE_USER_KEY()
     cd "${TEST_WORK_DIR}"
     bash ./m-1-generate_user_key.sh -n test.lan -q > /dev/null 2>&1
 
-    F_ASSERT_FILE_EXISTS "用户私钥已生成" "${TEST_WORK_DIR}/from_user_csr/test.lan.key"
+    F_ASSERT_FILE_EXISTS "用户私钥已生成" "${TEST_WORK_DIR}/CA_data/from_user_csr/test.lan.key"
 
     # 验证私钥权限
-    if [ -f "${TEST_WORK_DIR}/from_user_csr/test.lan.key" ]; then
-        local KEY_PERM=$(stat -c "%a" "${TEST_WORK_DIR}/from_user_csr/test.lan.key" 2>/dev/null)
+    if [ -f "${TEST_WORK_DIR}/CA_data/from_user_csr/test.lan.key" ]; then
+        local KEY_PERM=$(stat -c "%a" "${TEST_WORK_DIR}/CA_data/from_user_csr/test.lan.key" 2>/dev/null)
         F_ASSERT "用户私钥权限为 600" $([ "${KEY_PERM}" = "600" ] && echo 0 || echo 1)
 
         # 验证是有效的 RSA 私钥
-        openssl rsa -in "${TEST_WORK_DIR}/from_user_csr/test.lan.key" -check -noout > /dev/null 2>&1
+        openssl rsa -in "${TEST_WORK_DIR}/CA_data/from_user_csr/test.lan.key" -check -noout > /dev/null 2>&1
         F_ASSERT "用户私钥格式有效" $?
     fi
 }
@@ -249,15 +249,15 @@ T_GENERATE_USER_CSR()
     cd "${TEST_WORK_DIR}"
     bash ./m-2-generate_user_csr.sh -n test.lan -q > /dev/null 2>&1
 
-    F_ASSERT_FILE_EXISTS "用户 CSR 已生成" "${TEST_WORK_DIR}/from_user_csr/test.lan.csr"
+    F_ASSERT_FILE_EXISTS "用户 CSR 已生成" "${TEST_WORK_DIR}/CA_data/from_user_csr/test.lan.csr"
 
     # 验证 CSR 格式
-    if [ -f "${TEST_WORK_DIR}/from_user_csr/test.lan.csr" ]; then
-        openssl req -in "${TEST_WORK_DIR}/from_user_csr/test.lan.csr" -noout -verify > /dev/null 2>&1
+    if [ -f "${TEST_WORK_DIR}/CA_data/from_user_csr/test.lan.csr" ]; then
+        openssl req -in "${TEST_WORK_DIR}/CA_data/from_user_csr/test.lan.csr" -noout -verify > /dev/null 2>&1
         F_ASSERT "用户 CSR 格式有效" $?
 
         # 验证 CN
-        local CSR_CN=$(openssl req -in "${TEST_WORK_DIR}/from_user_csr/test.lan.csr" -noout -subject 2>/dev/null | grep "test.lan")
+        local CSR_CN=$(openssl req -in "${TEST_WORK_DIR}/CA_data/from_user_csr/test.lan.csr" -noout -subject 2>/dev/null | grep "test.lan")
         F_ASSERT "CSR 包含正确的 CN (test.lan)" $([ -n "${CSR_CN}" ] && echo 0 || echo 1)
     fi
 }
@@ -271,19 +271,19 @@ T_GENERATE_USER_CRT()
     cd "${TEST_WORK_DIR}"
     bash ./m-3-generate_user_crt.sh -n test.lan -q > /dev/null 2>&1
 
-    F_ASSERT_FILE_EXISTS "用户证书已生成" "${TEST_WORK_DIR}/to_user_crt/test.lan.crt"
+    F_ASSERT_FILE_EXISTS "用户证书已生成" "${TEST_WORK_DIR}/CA_data/to_user_crt/test.lan.crt"
 
     # 验证证书
-    if [ -f "${TEST_WORK_DIR}/to_user_crt/test.lan.crt" ]; then
-        openssl x509 -in "${TEST_WORK_DIR}/to_user_crt/test.lan.crt" -noout -text > /dev/null 2>&1
+    if [ -f "${TEST_WORK_DIR}/CA_data/to_user_crt/test.lan.crt" ]; then
+        openssl x509 -in "${TEST_WORK_DIR}/CA_data/to_user_crt/test.lan.crt" -noout -text > /dev/null 2>&1
         F_ASSERT "用户证书格式有效" $?
 
         # 验证证书是由 CA 签名的
-        openssl verify -CAfile "${TEST_WORK_DIR}/ca.pem.crt" "${TEST_WORK_DIR}/to_user_crt/test.lan.crt" > /dev/null 2>&1
+        openssl verify -CAfile "${TEST_WORK_DIR}/CA_data/ca.pem.crt" "${TEST_WORK_DIR}/CA_data/to_user_crt/test.lan.crt" > /dev/null 2>&1
         F_ASSERT "用户证书通过 CA 验证" $?
 
         # 验证不是 CA 证书
-        local NOT_CA=$(openssl x509 -in "${TEST_WORK_DIR}/to_user_crt/test.lan.crt" -noout -text 2>/dev/null | grep "CA:FALSE")
+        local NOT_CA=$(openssl x509 -in "${TEST_WORK_DIR}/CA_data/to_user_crt/test.lan.crt" -noout -text 2>/dev/null | grep "CA:FALSE")
         F_ASSERT "用户证书含 CA:FALSE 标识" $([ -n "${NOT_CA}" ] && echo 0 || echo 1)
     fi
 }
@@ -297,13 +297,13 @@ T_3IN1_GENERATE()
     cd "${TEST_WORK_DIR}"
     bash ./m-3in1-generate_user_key-csr-crt.sh -n test2.lan -q > /dev/null 2>&1
 
-    F_ASSERT_FILE_EXISTS "一键：用户私钥已生成" "${TEST_WORK_DIR}/from_user_csr/test2.lan.key"
-    F_ASSERT_FILE_EXISTS "一键：用户 CSR 已生成" "${TEST_WORK_DIR}/from_user_csr/test2.lan.csr"
-    F_ASSERT_FILE_EXISTS "一键：用户证书已生成" "${TEST_WORK_DIR}/to_user_crt/test2.lan.crt"
+    F_ASSERT_FILE_EXISTS "一键：用户私钥已生成" "${TEST_WORK_DIR}/CA_data/from_user_csr/test2.lan.key"
+    F_ASSERT_FILE_EXISTS "一键：用户 CSR 已生成" "${TEST_WORK_DIR}/CA_data/from_user_csr/test2.lan.csr"
+    F_ASSERT_FILE_EXISTS "一键：用户证书已生成" "${TEST_WORK_DIR}/CA_data/to_user_crt/test2.lan.crt"
 
     # 验证证书链
-    if [ -f "${TEST_WORK_DIR}/to_user_crt/test2.lan.crt" ]; then
-        openssl verify -CAfile "${TEST_WORK_DIR}/ca.pem.crt" "${TEST_WORK_DIR}/to_user_crt/test2.lan.crt" > /dev/null 2>&1
+    if [ -f "${TEST_WORK_DIR}/CA_data/to_user_crt/test2.lan.crt" ]; then
+        openssl verify -CAfile "${TEST_WORK_DIR}/CA_data/ca.pem.crt" "${TEST_WORK_DIR}/CA_data/to_user_crt/test2.lan.crt" > /dev/null 2>&1
         F_ASSERT "一键：证书通过 CA 验证" $?
     fi
 }
@@ -318,8 +318,8 @@ T_RENEW_USER_CRT()
 
     # 记录旧证书的序列号用于对比
     local OLD_SERIAL=""
-    if [ -f "${TEST_WORK_DIR}/to_user_crt/test.lan.crt" ]; then
-        OLD_SERIAL=$(openssl x509 -in "${TEST_WORK_DIR}/to_user_crt/test.lan.crt" -noout -serial 2>/dev/null)
+    if [ -f "${TEST_WORK_DIR}/CA_data/to_user_crt/test.lan.crt" ]; then
+        OLD_SERIAL=$(openssl x509 -in "${TEST_WORK_DIR}/CA_data/to_user_crt/test.lan.crt" -noout -serial 2>/dev/null)
     fi
     F_ASSERT "续签前旧证书存在" $([ -n "${OLD_SERIAL}" ] && echo 0 || echo 1)
 
@@ -327,19 +327,19 @@ T_RENEW_USER_CRT()
     bash ./m-x-renew_user_crt.sh -n test.lan -q --no-revoke > /dev/null 2>&1
     F_ASSERT "续签执行成功" $?
 
-    F_ASSERT_FILE_EXISTS "续签：新证书已生成" "${TEST_WORK_DIR}/to_user_crt/test.lan.crt"
+    F_ASSERT_FILE_EXISTS "续签：新证书已生成" "${TEST_WORK_DIR}/CA_data/to_user_crt/test.lan.crt"
 
     # 验证旧证书备份文件存在
-    local BAK_COUNT=$(ls "${TEST_WORK_DIR}/to_user_crt/test.lan.crt."* 2>/dev/null | wc -l)
+    local BAK_COUNT=$(ls "${TEST_WORK_DIR}/CA_data/to_user_crt/test.lan.crt."* 2>/dev/null | wc -l)
     F_ASSERT "续签：旧证书备份文件存在" $([ "${BAK_COUNT}" -ge 1 ] && echo 0 || echo 1)
 
     # 验证新证书序列号与旧证书不同
-    if [ -f "${TEST_WORK_DIR}/to_user_crt/test.lan.crt" ]; then
-        local NEW_SERIAL=$(openssl x509 -in "${TEST_WORK_DIR}/to_user_crt/test.lan.crt" -noout -serial 2>/dev/null)
+    if [ -f "${TEST_WORK_DIR}/CA_data/to_user_crt/test.lan.crt" ]; then
+        local NEW_SERIAL=$(openssl x509 -in "${TEST_WORK_DIR}/CA_data/to_user_crt/test.lan.crt" -noout -serial 2>/dev/null)
         F_ASSERT "续签：新证书序列号不同" $([ "${NEW_SERIAL}" != "${OLD_SERIAL}" ] && echo 0 || echo 1)
 
         # 验证新证书通过 CA 验证
-        openssl verify -CAfile "${TEST_WORK_DIR}/ca.pem.crt" "${TEST_WORK_DIR}/to_user_crt/test.lan.crt" > /dev/null 2>&1
+        openssl verify -CAfile "${TEST_WORK_DIR}/CA_data/ca.pem.crt" "${TEST_WORK_DIR}/CA_data/to_user_crt/test.lan.crt" > /dev/null 2>&1
         F_ASSERT "续签：新证书通过 CA 验证" $?
     fi
 }
@@ -355,8 +355,8 @@ T_REVOKE_CRT()
     F_ASSERT "证书吊销执行成功" $?
 
     # 验证 index.txt 中有吊销记录 (R 开头的行)
-    if [ -f "${TEST_WORK_DIR}/index.txt" ]; then
-        local REVOKED=$(grep "^R" "${TEST_WORK_DIR}/index.txt" | grep "test.lan")
+    if [ -f "${TEST_WORK_DIR}/CA_data/index.txt" ]; then
+        local REVOKED=$(grep "^R" "${TEST_WORK_DIR}/CA_data/index.txt" | grep "test.lan")
         F_ASSERT "index.txt 中有吊销记录" $([ -n "${REVOKED}" ] && echo 0 || echo 1)
     fi
 }
@@ -371,12 +371,12 @@ T_GENERATE_CRL()
     bash ./m-x-generate_CA_crl.sh -y > /dev/null 2>&1
     F_ASSERT "CRL 生成执行成功" $?
 
-    F_ASSERT_FILE_EXISTS "CRL PEM 文件已生成" "${TEST_WORK_DIR}/crl/ca.crl.pem"
-    F_ASSERT_FILE_EXISTS "CRL DER 文件已生成" "${TEST_WORK_DIR}/crl/ca.crl.der"
+    F_ASSERT_FILE_EXISTS "CRL PEM 文件已生成" "${TEST_WORK_DIR}/CA_data/crl/ca.crl.pem"
+    F_ASSERT_FILE_EXISTS "CRL DER 文件已生成" "${TEST_WORK_DIR}/CA_data/crl/ca.crl.der"
 
     # 验证 CRL 格式
-    if [ -f "${TEST_WORK_DIR}/crl/ca.crl.pem" ]; then
-        openssl crl -in "${TEST_WORK_DIR}/crl/ca.crl.pem" -noout -text > /dev/null 2>&1
+    if [ -f "${TEST_WORK_DIR}/CA_data/crl/ca.crl.pem" ]; then
+        openssl crl -in "${TEST_WORK_DIR}/CA_data/crl/ca.crl.pem" -noout -text > /dev/null 2>&1
         F_ASSERT "CRL 文件格式有效" $?
     fi
 }

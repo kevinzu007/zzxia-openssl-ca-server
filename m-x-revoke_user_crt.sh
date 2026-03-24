@@ -40,7 +40,7 @@ $(F_HELP_PARAM_SPEC)
     参数说明：
         -h|--help                    此帮助
         -n|--name <证书名称>         指定要吊销的证书名称（不含路径和后缀）
-                       例如：test.com (将在这个路径寻找：to_user_crt/test.com.crt)
+                       例如：test.com (将在这个路径寻找：CA_data/to_user_crt/test.com.crt)
     示例:
         $0 -n test.com
     "
@@ -110,7 +110,7 @@ F_GENERATE_OPENSSL_CNF "${CA_NAME}"
 
 
 # check cert file
-CRT_FILE="${SH_PATH}/to_user_crt/${NAME}.crt"
+CRT_FILE="${CA_DATA_DIR}/to_user_crt/${NAME}.crt"
 if [ ! -f "${CRT_FILE}" ]; then
     echo -e "\n峰哥说：找不到证书文件：\n    【${CRT_FILE}】\n"
     exit 1

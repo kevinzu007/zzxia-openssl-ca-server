@@ -8,6 +8,9 @@
 # 获取脚本所在目录
 SH_PATH=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
+# CA运行时数据目录
+CA_DATA_DIR="${SH_PATH}/CA_data"
+
 
 
 # 检查openssl是否存在
@@ -179,7 +182,7 @@ default_ca = CA_default        # The default ca section
 
 ####################################################################
 [ CA_default ]
-dir     = ${SH_PATH}      # Where everything is kept
+dir     = ${CA_DATA_DIR}      # Where everything is kept
 
 # 颁发的证书路径
 new_certs_dir   = \$dir/newcerts    # default place for new certs.
